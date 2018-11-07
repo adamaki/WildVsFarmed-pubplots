@@ -1661,3 +1661,201 @@ nacc2bap <- aplot
 # draw depth plots for all studies
 plot_grid(wap, fap, acc2aap, nacc2aap, acc2bap, nacc2bap, labels = c('(a)', '(b)', '(c)', '(d)', '(e)', '(f)'), rel_widths = c(1,1), hjust = c(rep(-3, 5), -4), vjust = c(3, 3, 3, 3, 3, 3), nrow = 3, ncol = 2, label_size = fs)
 
+
+
+# 16. Bar plots of individual fish night and day activity for all three trials
+
+detach('package:xlsx')
+library(openxlsx)
+
+# Read in wild vs. farmed activity data
+
+setwd('H:/Acoustic tag - Wild vs. Farmed/Data processing/Cropped data/Coded Day CSV/Outputs')
+wfact <- read.csv('ActivityTotOutput-fish.csv')
+rownames(wfact) <- wfact$ID
+wfact[,c(1, 2)] <- NULL
+wfact <- t(wfact)
+wact <- as.data.frame(wfact[,1:8])
+fact <- as.data.frame(wfact[,9:16])
+wact <- setDT(wact, keep.rownames = T)[]
+colnames(wact)[1] <- 'fishID'
+fact <- setDT(fact, keep.rownames = T)[]
+colnames(fact)[1] <- 'fishID'
+wact <- filter(wact, !is.na(P7_dawn_mean))
+fact <- filter(fact, !is.na(P8_dawn_mean))
+wact$fishID <- substring(wact$fishID, 2)
+fact$fishID <- substring(fact$fishID, 2)
+wact[,2:9] <- lapply(wact[,2:9], function(x) {as.numeric(as.character(x))}) # convert factors to numeric
+fact[,2:9] <- lapply(fact[,2:9], function(x) {as.numeric(as.character(x))})
+
+wact <- arrange(wact, P7_day_mean)
+wact$fishID <- as.factor(wact$fishID)
+flevels <- wact$fishID
+wact$fishID <- factor(wact$fishID, levels = flevels)
+
+fact <- arrange(fact, P8_day_mean)
+fact$fishID <- as.factor(fact$fishID)
+flevels <- fact$fishID
+fact$fishID <- factor(fact$fishID, levels = flevels)
+
+mdep <- melt(wact[,c('fishID', 'P7_dawn_mean', 'P7_day_mean', 'P7_dusk_mean', 'P7_night_mean')], measure.vars = c('P7_dawn_mean', 'P7_day_mean', 'P7_dusk_mean', 'P7_night_mean'), variable.name = 'time', value.name = 'mean')
+depse <- melt(wact[,c('fishID', 'P7_dawn_se', 'P7_day_se', 'P7_dusk_se', 'P7_night_se')], measure.vars = c('P7_dawn_se', 'P7_day_se', 'P7_dusk_se', 'P7_night_se'), variable.name = 'time', value.name = 'se')
+depse <- depse[,3]
+wact <- cbind(mdep, depse)
+wact$time <- substring(wact$time, 4)
+rm(mdep, depse)
+
+mdep <- melt(fact[,c('fishID', 'P8_dawn_mean', 'P8_day_mean', 'P8_dusk_mean', 'P8_night_mean')], measure.vars = c('P8_dawn_mean', 'P8_day_mean', 'P8_dusk_mean', 'P8_night_mean'), variable.name = 'time', value.name = 'mean')
+depse <- melt(fact[,c('fishID', 'P8_dawn_se', 'P8_day_se', 'P8_dusk_se', 'P8_night_se')], measure.vars = c('P8_dawn_se', 'P8_day_se', 'P8_dusk_se', 'P8_night_se'), variable.name = 'time', value.name = 'se')
+depse <- depse[,3]
+fact <- cbind(mdep, depse)
+fact$time <- substring(fact$time, 4)
+rm(mdep, depse)
+
+
+# Read in acclimated A activity data
+
+setwd('H:/Acoustic tag - Preconditioning A/Data processing/Filtered Data/Recoded Day CSV/Outputs')
+acc2aact <- read.csv('ActivityTotOutput-fish.csv')
+rownames(acc2aact) <- acc2aact$ID
+acc2aact[,c(1, 2)] <- NULL
+acc2aact <- t(acc2aact)
+hacc2aact <- as.data.frame(acc2aact[,1:8])
+nacc2aact <- as.data.frame(acc2aact[,9:16])
+hacc2aact <- setDT(hacc2aact, keep.rownames = T)[]
+colnames(hacc2aact)[1] <- 'fishID'
+nacc2aact <- setDT(nacc2aact, keep.rownames = T)[]
+colnames(nacc2aact)[1] <- 'fishID'
+hacc2aact <- filter(hacc2aact, !is.na(P7_dawn_mean))
+nacc2aact <- filter(nacc2aact, !is.na(P8_dawn_mean))
+hacc2aact$fishID <- substring(hacc2aact$fishID, 2)
+nacc2aact$fishID <- substring(nacc2aact$fishID, 2)
+hacc2aact[,2:9] <- lapply(hacc2aact[,2:9], function(x) {as.numeric(as.character(x))}) # convert factors to numeric
+nacc2aact[,2:9] <- lapply(nacc2aact[,2:9], function(x) {as.numeric(as.character(x))})
+
+hacc2aact <- arrange(hacc2aact, P7_day_mean)
+hacc2aact$fishID <- as.factor(hacc2aact$fishID)
+flevels <- hacc2aact$fishID
+hacc2aact$fishID <- factor(hacc2aact$fishID, levels = flevels)
+
+nacc2aact <- arrange(nacc2aact, P8_day_mean)
+nacc2aact$fishID <- as.factor(nacc2aact$fishID)
+flevels <- nacc2aact$fishID
+nacc2aact$fishID <- factor(nacc2aact$fishID, levels = flevels)
+
+mdep <- melt(hacc2aact[,c('fishID', 'P7_dawn_mean', 'P7_day_mean', 'P7_dusk_mean', 'P7_night_mean')], measure.vars = c('P7_dawn_mean', 'P7_day_mean', 'P7_dusk_mean', 'P7_night_mean'), variable.name = 'time', value.name = 'mean')
+depse <- melt(hacc2aact[,c('fishID', 'P7_dawn_se', 'P7_day_se', 'P7_dusk_se', 'P7_night_se')], measure.vars = c('P7_dawn_se', 'P7_day_se', 'P7_dusk_se', 'P7_night_se'), variable.name = 'time', value.name = 'se')
+depse <- depse[,3]
+hacc2aact <- cbind(mdep, depse)
+hacc2aact$time <- substring(hacc2aact$time, 4)
+rm(mdep, depse)
+
+mdep <- melt(nacc2aact[,c('fishID', 'P8_dawn_mean', 'P8_day_mean', 'P8_dusk_mean', 'P8_night_mean')], measure.vars = c('P8_dawn_mean', 'P8_day_mean', 'P8_dusk_mean', 'P8_night_mean'), variable.name = 'time', value.name = 'mean')
+depse <- melt(nacc2aact[,c('fishID', 'P8_dawn_se', 'P8_day_se', 'P8_dusk_se', 'P8_night_se')], measure.vars = c('P8_dawn_se', 'P8_day_se', 'P8_dusk_se', 'P8_night_se'), variable.name = 'time', value.name = 'se')
+depse <- depse[,3]
+nacc2aact <- cbind(mdep, depse)
+nacc2aact$time <- substring(nacc2aact$time, 4)
+rm(mdep, depse)
+
+
+# Read in acclimated B activity data
+
+setwd('H:/Acoustic tag - Preconditioning B/Data processing/Filtered Data/Recoded Day CSV/Outputs')
+acc2bact <- read.csv('ActivityTotOutput-fish.csv')
+rownames(acc2bact) <- acc2bact$ID
+acc2bact[,c(1, 2)] <- NULL
+acc2bact <- t(acc2bact)
+hacc2bact <- as.data.frame(acc2bact[,1:8])
+nacc2bact <- as.data.frame(acc2bact[,9:16])
+hacc2bact <- setDT(hacc2bact, keep.rownames = T)[]
+colnames(hacc2bact)[1] <- 'fishID'
+nacc2bact <- setDT(nacc2bact, keep.rownames = T)[]
+colnames(nacc2bact)[1] <- 'fishID'
+hacc2bact <- filter(hacc2bact, !is.na(P7_dawn_mean))
+nacc2bact <- filter(nacc2bact, !is.na(P8_dawn_mean))
+hacc2bact$fishID <- substring(hacc2bact$fishID, 2)
+nacc2bact$fishID <- substring(nacc2bact$fishID, 2)
+hacc2bact[,2:9] <- lapply(hacc2bact[,2:9], function(x) {as.numeric(as.character(x))}) # convert factors to numeric
+nacc2bact[,2:9] <- lapply(nacc2bact[,2:9], function(x) {as.numeric(as.character(x))})
+
+hacc2bact <- arrange(hacc2bact, P7_day_mean)
+hacc2bact$fishID <- as.factor(hacc2bact$fishID)
+flevels <- hacc2bact$fishID
+hacc2bact$fishID <- factor(hacc2bact$fishID, levels = flevels)
+
+nacc2bact <- arrange(nacc2bact, P8_day_mean)
+nacc2bact$fishID <- as.factor(nacc2bact$fishID)
+flevels <- nacc2bact$fishID
+nacc2bact$fishID <- factor(nacc2bact$fishID, levels = flevels)
+
+mdep <- melt(hacc2bact[,c('fishID', 'P7_dawn_mean', 'P7_day_mean', 'P7_dusk_mean', 'P7_night_mean')], measure.vars = c('P7_dawn_mean', 'P7_day_mean', 'P7_dusk_mean', 'P7_night_mean'), variable.name = 'time', value.name = 'mean')
+depse <- melt(hacc2bact[,c('fishID', 'P7_dawn_se', 'P7_day_se', 'P7_dusk_se', 'P7_night_se')], measure.vars = c('P7_dawn_se', 'P7_day_se', 'P7_dusk_se', 'P7_night_se'), variable.name = 'time', value.name = 'se')
+depse <- depse[,3]
+hacc2bact <- cbind(mdep, depse)
+hacc2bact$time <- substring(hacc2bact$time, 4)
+rm(mdep, depse)
+
+mdep <- melt(nacc2bact[,c('fishID', 'P8_dawn_mean', 'P8_day_mean', 'P8_dusk_mean', 'P8_night_mean')], measure.vars = c('P8_dawn_mean', 'P8_day_mean', 'P8_dusk_mean', 'P8_night_mean'), variable.name = 'time', value.name = 'mean')
+depse <- melt(nacc2bact[,c('fishID', 'P8_dawn_se', 'P8_day_se', 'P8_dusk_se', 'P8_night_se')], measure.vars = c('P8_dawn_se', 'P8_day_se', 'P8_dusk_se', 'P8_night_se'), variable.name = 'time', value.name = 'se')
+depse <- depse[,3]
+nacc2bact <- cbind(mdep, depse)
+nacc2bact$time <- substring(nacc2bact$time, 4)
+rm(mdep, depse)
+
+# Create dataframes of significance levels
+
+#hpacsig <- data.frame(fishID = unique(hpacact$fishID), act = c(0.48, 0.5, 0.6, 0.61, 0.75, 0.82, 0.9, 0.99, 1.06, 1.05))
+#wsig <- data.frame(fishID = unique(wact$fishID), act = c(0.31, 0.42, 0.43, 0.43, 0.44, 0.45, 0.45, 0.45, 0.47, 0.49, 0.5, 0.58, 0.59, 0.59))
+#hacsig <- data.frame(fishID = unique(hacact$fishID), act = c(0.6, 0.6, 0.61, 0.63, 0.64, 0.64, 0.64, 0.7, 0.7, 0.72, 0.85, 0.85, 1.01))
+
+# Draw barplots of activity
+
+
+plotfont <- 'Arial'
+fs <- 12
+
+fishactplot <- function(df, leg){
+  
+  faplot <- ggplot(df, aes(x = fishID, y = mean)) +
+    theme_classic() + 
+    theme(text = element_text(family = plotfont, size = fs), plot.margin = margin(10, 5, 10, 1, 'pt')) + 
+    geom_bar(aes(fill = time), stat = 'identity', position = 'dodge') + 
+    geom_errorbar(aes(ymin = mean-depse, ymax = mean+depse, fill = time), width = 0.4, position = position_dodge(1)) +
+    scale_fill_manual(guide = guide_legend(title = NULL,  label.theme = element_text(size = fs, angle = 0, family = plotfont)), labels = c('Dawn', 'Day', 'Dusk', 'Night'), values = c('dawn_mean' = 'gray40', 'day_mean' = 'gray80', 'dusk_mean' = 'gray60', 'night_mean' = 'gray20')) +
+    scale_y_continuous(name = 'Activity (BL/s)', expand = c(0,0), limits = c(0, 1), breaks = seq(0, 1, 0.1)) + 
+    scale_x_discrete(name = 'fish ID', expand = c(0,0)) +
+    theme(axis.text.x = element_text(size = 10), axis.text.y = element_text(size = fs)) # +
+  #geom_text(data = wsig, label = c(' ', '*', '*', '**', '*', '*', '*', '*', '*', '*', '*', '**', '*', '**'), size = 5, hjust = 'centre')
+  
+  if(leg == T){
+    faplot <- faplot + theme(legend.position = c(0.85, 0.85))
+  } else {
+    faplot <- faplot + theme(legend.position = 'none')
+  }
+  
+  faplot <<- faplot
+}
+
+fishactplot(wact, F)
+wfap <- faplot
+
+fishactplot(fact, T)
+ffap <- faplot
+
+fishactplot(hacc2aact, F)
+h2afap <- faplot
+
+fishactplot(nacc2aact, F)
+n2afap <- faplot
+
+fishactplot(hacc2bact, F)
+h2bfap <- faplot
+
+fishactplot(nacc2bact, F)
+n2bfap <- faplot
+
+
+plot_grid(wfap, ffap, h2afap, n2afap, h2bfap, n2bfap, labels = c('(a)', '(b)', '(c)', '(d)', '(e)', '(f)'),  rel_widths = c(1,1), hjust = c(rep(-4, 5), -5), vjust = c(rep(2.5, 6)), nrow = 3, ncol = 2, label_size = fs)
+
+
+
