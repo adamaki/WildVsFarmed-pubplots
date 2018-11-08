@@ -42,6 +42,7 @@ library(reshape2)
 library(cowplot)
 library(data.table)
 library(colorspace)
+library(tidyverse)
 
 
 
@@ -2148,4 +2149,328 @@ plot_grid(fdlp, fnlp, wdlp, wnlp, nadlp, nanlp, acdlp, acnlp, labels = c('(a)', 
 
 
 
+# 18. Night and day Locations of individual fish for wild vs. farmed and acclimated vs. non-acclimated B
+
+# load wild vs. farmed day locations data, reorganise and recalculate as proportions
+
+setwd('H:/Acoustic tag - Wild vs. Farmed/Data processing/Cropped data/Coded Day CSV/Outputs')
+wflocs <- read.csv('LocationsOutput-fish-day.csv')
+wflocs <- as.data.frame(wflocs)
+wflocs$X <- as.character(wflocs$X)
+wflocs[1,1] <- 'P7_lt15m'
+wflocs[2,1] <- 'P7_gt15m'
+wflocs[10,1] <- 'P8_lt15m'
+wflocs[11,1] <- 'P8_gt15m'
+rownames(wflocs) <- wflocs$X
+wflocs[,1] <- NULL
+colnames(wflocs) <- substring(colnames(wflocs), 2)
+#wflocs <- wflocs[,1:37]
+wflocs <- as.data.frame(t(wflocs))
+wflocs$P7_totedge <- wflocs$P7_outer + wflocs$P7_edge
+wflocs$P8_totedge <- wflocs$P8_outer + wflocs$P8_edge
+wflocs$P7_hidecor_nohid <- wflocs$P7_hidecorner - wflocs$P7_hides - wflocs$P7_feedblock
+wflocs$P8_hidecor_nohid <- wflocs$P8_hidecorner - wflocs$P8_hides - wflocs$P8_feedblock
+#wflocs <- wflocs[c(1, 19, seq(6, 9), 21, 10, 20, seq(15, 18), 22)]
+wflocs <- wflocs[c(1, 9, 8, 7, 21, 6, 19, 10, 18, 17, 16, 22, 15, 20)]
+wflocs[wflocs <0] <- 0
+wflocs$P7_tot <- wflocs[,1] + wflocs[,2] + wflocs[,3] + wflocs[,4] + wflocs[,5] + wflocs[,6] + wflocs[,7]
+wflocs$P8_tot <- wflocs[,8] + wflocs[,9] + wflocs[,10] + wflocs[,11] + wflocs[,12] + wflocs[,13] + wflocs[,14]
+wflocs$P7_lt15m <- (wflocs$P7_lt15m / wflocs$P7_tot)*100
+wflocs$P7_totedge <- (wflocs$P7_totedge / wflocs$P7_tot)*100
+wflocs$P7_emptycorner <- (wflocs$P7_emptycorner / wflocs$P7_tot)*100
+wflocs$P7_centre <- (wflocs$P7_centre / wflocs$P7_tot)*100
+wflocs$P7_hides <- (wflocs$P7_hides / wflocs$P7_tot)*100
+wflocs$P7_feedblock <- (wflocs$P7_feedblock / wflocs$P7_tot)*100
+wflocs$P7_hidecor_nohid <- (wflocs$P7_hidecor_nohid / wflocs$P7_tot)*100
+wflocs$P8_lt15m <- (wflocs$P8_lt15m / wflocs$P8_tot)*100
+wflocs$P8_totedge <- (wflocs$P8_totedge / wflocs$P8_tot)*100
+wflocs$P8_emptycorner <- (wflocs$P8_emptycorner / wflocs$P8_tot)*100
+wflocs$P8_centre <- (wflocs$P8_centre / wflocs$P8_tot)*100
+wflocs$P8_hides <- (wflocs$P8_hides / wflocs$P8_tot)*100
+wflocs$P8_feedblock <- (wflocs$P8_feedblock / wflocs$P8_tot)*100
+wflocs$P8_hidecor_nohid <- (wflocs$P8_hidecor_nohid / wflocs$P8_tot)*100
+wdlocs <- wflocs[c(1:7)]
+wdlocs <- rownames_to_column(wdlocs, var = 'fishID')
+wdlocs <- filter(wdlocs, P7_centre != 'NaN')
+
+wdlocs <- arrange(wdlocs, desc(P7_lt15m))
+wdlocs$fishID <- as.factor(wdlocs$fishID)
+flevels <- wdlocs$fishID
+wdlocs$fishID <- factor(wdlocs$fishID, levels = flevels)
+#wdlocs <- column_to_rownames(wdlocs, var = 'fishID')
+wdlocs <- melt(wdlocs, variable.name = 'locs', value.name = 'props', id.vars = 'fishID')
+wdlocs$locs <- substring(wdlocs$locs, 4)
+wdlocs$locs <- as.factor(wdlocs$locs)
+wdlocs$locs <- factor(wdlocs$locs, levels(wdlocs$locs)[c(6, 3, 5, 1, 4, 2, 7)]) 
+
+fdlocs <- wflocs[c(8:14)]
+fdlocs <- rownames_to_column(fdlocs, var = 'fishID')
+fdlocs <- filter(fdlocs, P8_centre != 'NaN')
+fdlocs <- arrange(fdlocs, desc(P8_lt15m))
+fdlocs$fishID <- as.factor(fdlocs$fishID)
+flevels <- fdlocs$fishID
+fdlocs$fishID <- factor(fdlocs$fishID, levels = flevels)
+fdlocs <- melt(fdlocs, variable.name = 'locs', value.name = 'props', id.vars = 'fishID')
+fdlocs$locs <- substring(fdlocs$locs, 4)
+fdlocs$locs <- as.factor(fdlocs$locs)
+fdlocs$locs <- factor(fdlocs$locs, levels(fdlocs$locs)[c(6, 3, 5, 1, 4, 2, 7)])
+
+# load wild vs. farmed night locations data, reorganise and recalculate as proportions
+
+setwd('H:/Acoustic tag - Wild vs. Farmed/Data processing/Cropped data/Coded Day CSV/Outputs')
+wflocs <- read.csv('LocationsOutput-fish-night.csv')
+wflocs <- as.data.frame(wflocs)
+wflocs$X <- as.character(wflocs$X)
+wflocs[1,1] <- 'P7_lt15m'
+wflocs[2,1] <- 'P7_gt15m'
+wflocs[10,1] <- 'P8_lt15m'
+wflocs[11,1] <- 'P8_gt15m'
+rownames(wflocs) <- wflocs$X
+wflocs[,1] <- NULL
+colnames(wflocs) <- substring(colnames(wflocs), 2)
+#wflocs <- wflocs[,1:37]
+wflocs <- as.data.frame(t(wflocs))
+wflocs$P7_totedge <- wflocs$P7_outer + wflocs$P7_edge
+wflocs$P8_totedge <- wflocs$P8_outer + wflocs$P8_edge
+wflocs$P7_hidecor_nohid <- wflocs$P7_hidecorner - wflocs$P7_hides - wflocs$P7_feedblock
+wflocs$P8_hidecor_nohid <- wflocs$P8_hidecorner - wflocs$P8_hides - wflocs$P8_feedblock
+#wflocs <- wflocs[c(1, 19, seq(6, 9), 21, 10, 20, seq(15, 18), 22)]
+wflocs <- wflocs[c(1, 9, 8, 7, 21, 6, 19, 10, 18, 17, 16, 22, 15, 20)]
+wflocs[wflocs <0] <- 0
+wflocs$P7_tot <- wflocs[,1] + wflocs[,2] + wflocs[,3] + wflocs[,4] + wflocs[,5] + wflocs[,6] + wflocs[,7]
+wflocs$P8_tot <- wflocs[,8] + wflocs[,9] + wflocs[,10] + wflocs[,11] + wflocs[,12] + wflocs[,13] + wflocs[,14]
+wflocs$P7_lt15m <- (wflocs$P7_lt15m / wflocs$P7_tot)*100
+wflocs$P7_totedge <- (wflocs$P7_totedge / wflocs$P7_tot)*100
+wflocs$P7_emptycorner <- (wflocs$P7_emptycorner / wflocs$P7_tot)*100
+wflocs$P7_centre <- (wflocs$P7_centre / wflocs$P7_tot)*100
+wflocs$P7_hides <- (wflocs$P7_hides / wflocs$P7_tot)*100
+wflocs$P7_feedblock <- (wflocs$P7_feedblock / wflocs$P7_tot)*100
+wflocs$P7_hidecor_nohid <- (wflocs$P7_hidecor_nohid / wflocs$P7_tot)*100
+wflocs$P8_lt15m <- (wflocs$P8_lt15m / wflocs$P8_tot)*100
+wflocs$P8_totedge <- (wflocs$P8_totedge / wflocs$P8_tot)*100
+wflocs$P8_emptycorner <- (wflocs$P8_emptycorner / wflocs$P8_tot)*100
+wflocs$P8_centre <- (wflocs$P8_centre / wflocs$P8_tot)*100
+wflocs$P8_hides <- (wflocs$P8_hides / wflocs$P8_tot)*100
+wflocs$P8_feedblock <- (wflocs$P8_feedblock / wflocs$P8_tot)*100
+wflocs$P8_hidecor_nohid <- (wflocs$P8_hidecor_nohid / wflocs$P8_tot)*100
+wnlocs <- wflocs[c(1:7)]
+wnlocs <- rownames_to_column(wnlocs, var = 'fishID')
+wnlocs <- filter(wnlocs, P7_centre != 'NaN')
+
+wnlocs <- arrange(wnlocs, desc(P7_lt15m))
+wnlocs$fishID <- as.factor(wnlocs$fishID)
+flevels <- wnlocs$fishID
+wnlocs$fishID <- factor(wnlocs$fishID, levels = flevels)
+#wnlocs <- column_to_rownames(wnlocs, var = 'fishID')
+wnlocs <- melt(wnlocs, variable.name = 'locs', value.name = 'props', id.vars = 'fishID')
+wnlocs$locs <- substring(wnlocs$locs, 4)
+wnlocs$locs <- as.factor(wnlocs$locs)
+wnlocs$locs <- factor(wnlocs$locs, levels(wnlocs$locs)[c(6, 3, 5, 1, 4, 2, 7)]) 
+
+fnlocs <- wflocs[c(8:14)]
+fnlocs <- rownames_to_column(fnlocs, var = 'fishID')
+fnlocs <- filter(fnlocs, P8_centre != 'NaN')
+fnlocs <- arrange(fnlocs, desc(P8_lt15m))
+fnlocs$fishID <- as.factor(fnlocs$fishID)
+flevels <- fnlocs$fishID
+fnlocs$fishID <- factor(fnlocs$fishID, levels = flevels)
+fnlocs <- melt(fnlocs, variable.name = 'locs', value.name = 'props', id.vars = 'fishID')
+fnlocs$locs <- substring(fnlocs$locs, 4)
+fnlocs$locs <- as.factor(fnlocs$locs)
+fnlocs$locs <- factor(fnlocs$locs, levels(fnlocs$locs)[c(6, 3, 5, 1, 4, 2, 7)])
+
+rm(wflocs)
+
+# load acclimated vs. non-acclimated fish day locations data, reorganise and recalculate as proportions
+
+setwd('H:/Acoustic tag - Preconditioning B/Data processing/Filtered Data/Recoded Day CSV/Outputs')
+acclocs <- read.csv('LocationsOutput-fish-day.csv')
+acclocs <- as.data.frame(acclocs)
+acclocs$X <- as.character(acclocs$X)
+acclocs[1,1] <- 'P7_lt15m'
+acclocs[2,1] <- 'P7_gt15m'
+acclocs[10,1] <- 'P8_lt15m'
+acclocs[11,1] <- 'P8_gt15m'
+rownames(acclocs) <- acclocs$X
+acclocs[,1] <- NULL
+colnames(acclocs) <- substring(colnames(acclocs), 2)
+#acclocs <- acclocs[,1:37]
+acclocs <- as.data.frame(t(acclocs))
+acclocs$P7_totedge <- acclocs$P7_outer + acclocs$P7_edge
+acclocs$P8_totedge <- acclocs$P8_outer + acclocs$P8_edge
+acclocs$P7_hidecor_nohid <- acclocs$P7_hidecorner - acclocs$P7_hides - acclocs$P7_feedblock
+acclocs$P8_hidecor_nohid <- acclocs$P8_hidecorner - acclocs$P8_hides - acclocs$P8_feedblock
+#acclocs <- acclocs[c(1, 19, seq(6, 9), 21, 10, 20, seq(15, 18), 22)]
+acclocs <- acclocs[c(1, 9, 8, 7, 21, 6, 19, 10, 18, 17, 16, 22, 15, 20)]
+acclocs[acclocs <0] <- 0
+acclocs$P7_tot <- acclocs[,1] + acclocs[,2] + acclocs[,3] + acclocs[,4] + acclocs[,5] + acclocs[,6] + acclocs[,7]
+acclocs$P8_tot <- acclocs[,8] + acclocs[,9] + acclocs[,10] + acclocs[,11] + acclocs[,12] + acclocs[,13] + acclocs[,14]
+acclocs$P7_lt15m <- (acclocs$P7_lt15m / acclocs$P7_tot)*100
+acclocs$P7_totedge <- (acclocs$P7_totedge / acclocs$P7_tot)*100
+acclocs$P7_emptycorner <- (acclocs$P7_emptycorner / acclocs$P7_tot)*100
+acclocs$P7_centre <- (acclocs$P7_centre / acclocs$P7_tot)*100
+acclocs$P7_hides <- (acclocs$P7_hides / acclocs$P7_tot)*100
+acclocs$P7_feedblock <- (acclocs$P7_feedblock / acclocs$P7_tot)*100
+acclocs$P7_hidecor_nohid <- (acclocs$P7_hidecor_nohid / acclocs$P7_tot)*100
+acclocs$P8_lt15m <- (acclocs$P8_lt15m / acclocs$P8_tot)*100
+acclocs$P8_totedge <- (acclocs$P8_totedge / acclocs$P8_tot)*100
+acclocs$P8_emptycorner <- (acclocs$P8_emptycorner / acclocs$P8_tot)*100
+acclocs$P8_centre <- (acclocs$P8_centre / acclocs$P8_tot)*100
+acclocs$P8_hides <- (acclocs$P8_hides / acclocs$P8_tot)*100
+acclocs$P8_feedblock <- (acclocs$P8_feedblock / acclocs$P8_tot)*100
+acclocs$P8_hidecor_nohid <- (acclocs$P8_hidecor_nohid / acclocs$P8_tot)*100
+hadlocs <- acclocs[c(1:7)]
+hadlocs <- rownames_to_column(hadlocs, var = 'fishID')
+hadlocs <- filter(hadlocs, P7_centre != 'NaN')
+
+hadlocs <- arrange(hadlocs, desc(P7_lt15m))
+hadlocs$fishID <- as.factor(hadlocs$fishID)
+flevels <- hadlocs$fishID
+hadlocs$fishID <- factor(hadlocs$fishID, levels = flevels)
+hadlocs <- melt(hadlocs, variable.name = 'locs', value.name = 'props', id.vars = 'fishID')
+hadlocs$locs <- substring(hadlocs$locs, 4)
+hadlocs$locs <- as.factor(hadlocs$locs)
+hadlocs$locs <- factor(hadlocs$locs, levels(hadlocs$locs)[c(6, 3, 5, 1, 4, 2, 7)]) 
+
+nadlocs <- acclocs[c(8:14)]
+nadlocs <- rownames_to_column(nadlocs, var = 'fishID')
+nadlocs <- filter(nadlocs, P8_centre != 'NaN')
+nadlocs <- arrange(nadlocs, desc(P8_lt15m))
+nadlocs$fishID <- as.factor(nadlocs$fishID)
+flevels <- nadlocs$fishID
+nadlocs$fishID <- factor(nadlocs$fishID, levels = flevels)
+nadlocs <- melt(nadlocs, variable.name = 'locs', value.name = 'props', id.vars = 'fishID')
+nadlocs$locs <- substring(nadlocs$locs, 4)
+nadlocs$locs <- as.factor(nadlocs$locs)
+nadlocs$locs <- factor(nadlocs$locs, levels(nadlocs$locs)[c(6, 3, 5, 1, 4, 2, 7)])
+
+# load acclimated vs. non-acclimated fish night locations data, reorganise and recalculate as proportions
+
+setwd('H:/Acoustic tag - Preconditioning B/Data processing/Filtered Data/Recoded Day CSV/Outputs')
+acclocs <- read.csv('LocationsOutput-fish-night.csv')
+acclocs <- as.data.frame(acclocs)
+acclocs$X <- as.character(acclocs$X)
+acclocs[1,1] <- 'P7_lt15m'
+acclocs[2,1] <- 'P7_gt15m'
+acclocs[10,1] <- 'P8_lt15m'
+acclocs[11,1] <- 'P8_gt15m'
+rownames(acclocs) <- acclocs$X
+acclocs[,1] <- NULL
+colnames(acclocs) <- substring(colnames(acclocs), 2)
+#acclocs <- acclocs[,1:37]
+acclocs <- as.data.frame(t(acclocs))
+acclocs$P7_totedge <- acclocs$P7_outer + acclocs$P7_edge
+acclocs$P8_totedge <- acclocs$P8_outer + acclocs$P8_edge
+acclocs$P7_hidecor_nohid <- acclocs$P7_hidecorner - acclocs$P7_hides - acclocs$P7_feedblock
+acclocs$P8_hidecor_nohid <- acclocs$P8_hidecorner - acclocs$P8_hides - acclocs$P8_feedblock
+#acclocs <- acclocs[c(1, 19, seq(6, 9), 21, 10, 20, seq(15, 18), 22)]
+acclocs <- acclocs[c(1, 9, 8, 7, 21, 6, 19, 10, 18, 17, 16, 22, 15, 20)]
+acclocs[acclocs <0] <- 0
+acclocs$P7_tot <- acclocs[,1] + acclocs[,2] + acclocs[,3] + acclocs[,4] + acclocs[,5] + acclocs[,6] + acclocs[,7]
+acclocs$P8_tot <- acclocs[,8] + acclocs[,9] + acclocs[,10] + acclocs[,11] + acclocs[,12] + acclocs[,13] + acclocs[,14]
+acclocs$P7_lt15m <- (acclocs$P7_lt15m / acclocs$P7_tot)*100
+acclocs$P7_totedge <- (acclocs$P7_totedge / acclocs$P7_tot)*100
+acclocs$P7_emptycorner <- (acclocs$P7_emptycorner / acclocs$P7_tot)*100
+acclocs$P7_centre <- (acclocs$P7_centre / acclocs$P7_tot)*100
+acclocs$P7_hides <- (acclocs$P7_hides / acclocs$P7_tot)*100
+acclocs$P7_feedblock <- (acclocs$P7_feedblock / acclocs$P7_tot)*100
+acclocs$P7_hidecor_nohid <- (acclocs$P7_hidecor_nohid / acclocs$P7_tot)*100
+acclocs$P8_lt15m <- (acclocs$P8_lt15m / acclocs$P8_tot)*100
+acclocs$P8_totedge <- (acclocs$P8_totedge / acclocs$P8_tot)*100
+acclocs$P8_emptycorner <- (acclocs$P8_emptycorner / acclocs$P8_tot)*100
+acclocs$P8_centre <- (acclocs$P8_centre / acclocs$P8_tot)*100
+acclocs$P8_hides <- (acclocs$P8_hides / acclocs$P8_tot)*100
+acclocs$P8_feedblock <- (acclocs$P8_feedblock / acclocs$P8_tot)*100
+acclocs$P8_hidecor_nohid <- (acclocs$P8_hidecor_nohid / acclocs$P8_tot)*100
+hanlocs <- acclocs[c(1:7)]
+hanlocs <- rownames_to_column(hanlocs, var = 'fishID')
+hanlocs <- filter(hanlocs, P7_centre != 'NaN')
+
+hanlocs <- arrange(hanlocs, desc(P7_lt15m))
+hanlocs$fishID <- as.factor(hanlocs$fishID)
+flevels <- hanlocs$fishID
+hanlocs$fishID <- factor(hanlocs$fishID, levels = flevels)
+hanlocs <- melt(hanlocs, variable.name = 'locs', value.name = 'props', id.vars = 'fishID')
+hanlocs$locs <- substring(hanlocs$locs, 4)
+hanlocs$locs <- as.factor(hanlocs$locs)
+hanlocs$locs <- factor(hanlocs$locs, levels(hanlocs$locs)[c(6, 3, 5, 1, 4, 2, 7)]) 
+
+nanlocs <- acclocs[c(8:14)]
+nanlocs <- rownames_to_column(nanlocs, var = 'fishID')
+nanlocs <- filter(nanlocs, P8_centre != 'NaN')
+nanlocs <- arrange(nanlocs, desc(P8_lt15m))
+nanlocs$fishID <- as.factor(nanlocs$fishID)
+flevels <- nanlocs$fishID
+nanlocs$fishID <- factor(nanlocs$fishID, levels = flevels)
+nanlocs <- melt(nanlocs, variable.name = 'locs', value.name = 'props', id.vars = 'fishID')
+nanlocs$locs <- substring(nanlocs$locs, 4)
+nanlocs$locs <- as.factor(nanlocs$locs)
+nanlocs$locs <- factor(nanlocs$locs, levels(nanlocs$locs)[c(6, 3, 5, 1, 4, 2, 7)])
+
+rm(acclocs)
+
+# draw stacked bar plots of wild vs. farmed
+
+plotfont <- 'Arial'
+fs <- 12
+
+#pal <- choose_palette()
+
+#npal <- rainbow_hcl(n = 7, c = 50, l = 40, start = -240, end = -19)
+npal <- diverge_hcl(7, h = c(259, 171), c = 49, l = c(34, 85), power = 1.3)
+npal <- npal[c(4, 6, 5, 7, 3, 2, 1)]
+dpal <- diverge_hcl(7, h = c(69, 360), c = 49, l = c(51, 87), power = 1.3)
+dpal <- dpal[c(4, 6, 5, 7, 3, 2, 1)]
+
+
+locfplot <- function(df, leg, pcols){
+  
+  lfplot <- ggplot(df, aes(x = fishID, y = props, fill = locs)) +
+    theme_classic() + theme(text = element_text(family = plotfont, size = fs), legend.position = 'none', plot.margin = margin(10, 5, 10, 1, 'pt')) +
+    geom_bar(stat = 'identity') +
+    scale_fill_manual(guide = guide_legend(title = NULL,  nrow = 4, keywidth = 0.75, keyheight = 0.75, label.theme = element_text(size = fs-1, angle = 0, family = plotfont)), 
+                      labels = c('below 15m', 'feed block', 'hides', 'centre', 'hide corners', 'empty corners', 'edge'), 
+                      values = c('lt15m' = pcols[[1]], 'feedblock' = pcols[[2]], 'hides' = pcols[[3]], 'centre' = pcols[[4]], 
+                                 'hidecor_nohid' = pcols[[5]], 'emptycorner' = pcols[[6]], 'totedge' = pcols[[7]])) +
+    scale_y_continuous(name = 'Time (%)', expand = c(0,0), breaks = seq(0, 100, 10)) + 
+    scale_x_discrete(name = 'Fish ID', expand = c(0,0)) + #limits = seq(0, 43, 1), 
+                     #labels = c('5', '10', '15', '20', '25', '30', '35', '40'), breaks = seq(5, 40, 5)) +
+    theme(axis.text.x = element_text(size = fs-2), axis.text.y = element_text(size = fs))
+  
+  if(leg == T){
+    lfplot <- lfplot + theme(legend.position = c(0.5, 0.75))
+  } else {
+    lfplot <- lfplot + theme(legend.position = 'none')
+  }
+  
+  lfplot <<- lfplot
+}
+
+
+locfplot(wdlocs, F, dpal)
+wdflp <- lfplot
+
+locfplot(wnlocs, F, npal)
+wnflp <- lfplot
+
+locfplot(fdlocs, T, dpal)
+fdflp <- lfplot
+
+locfplot(fnlocs, T, npal)
+fnflp <- lfplot
+
+locfplot(hadlocs, F, dpal)
+hadflp <- lfplot
+
+locfplot(hanlocs, F, npal)
+hanflp <- lfplot
+
+locfplot(nadlocs, F, dpal)
+nadflp <- lfplot
+
+locfplot(nanlocs, F, npal)
+nanflp <- lfplot
+
+
+plot_grid(fdflp, fnflp, wdflp, wnflp, nadflp, nanflp, hadflp, hanflp, labels = c('(a)', '(b)', '(c)', '(d)', '(e)', '(f)', '(g)', '(h)'),  rel_widths = c(1,1), hjust = c(rep(-4, 5), -5, rep(-4, 2)), vjust = c(rep(2.5, 8)), nrow = 4, ncol = 2, label_size = fs)
 
