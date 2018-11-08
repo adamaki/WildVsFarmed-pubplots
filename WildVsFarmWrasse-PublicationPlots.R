@@ -21,6 +21,9 @@
 # 12. Heatmap of depth over time
 # 13. Line plots of night and day depth for all three trials
 # 14. Bar plots of individual fish night and day depth for all three trials
+# 15. Line plots of night and day activity for all three trials
+# 16. Bar plots of individual fish night and day activity for all three trials
+
 
 
 
@@ -38,6 +41,7 @@ library(grid)
 library(reshape2)
 library(cowplot)
 library(data.table)
+library(colorspace)
 
 
 
@@ -1856,6 +1860,292 @@ n2bfap <- faplot
 
 
 plot_grid(wfap, ffap, h2afap, n2afap, h2bfap, n2bfap, labels = c('(a)', '(b)', '(c)', '(d)', '(e)', '(f)'),  rel_widths = c(1,1), hjust = c(rep(-4, 5), -5), vjust = c(rep(2.5, 6)), nrow = 3, ncol = 2, label_size = fs)
+
+
+
+# 17. Night and day Locations for wild vs. farmed and acclimated vs. non-acclimated B
+
+# load wild vs. farmed day locations data, reorganise and recalculate as proportions
+
+setwd('H:/Acoustic tag - Wild vs. Farmed/Data processing/Cropped data/Coded Day CSV/Outputs')
+wflocs <- read.csv('LocationsOutput-day.csv')
+wflocs <- as.data.frame(wflocs)
+wflocs$X <- as.character(wflocs$X)
+wflocs[1,1] <- 'P7_lt15m'
+wflocs[2,1] <- 'P7_gt15m'
+wflocs[10,1] <- 'P8_lt15m'
+wflocs[11,1] <- 'P8_gt15m'
+rownames(wflocs) <- wflocs$X
+wflocs[,c(1, 2)] <- NULL
+colnames(wflocs) <- c(seq(1, 14, 1), seq(19, 26, 1), seq(29, 43, 1))
+#wflocs <- wflocs[,1:37]
+wflocs <- as.data.frame(t(wflocs))
+wflocs$P7_totedge <- wflocs$P7_outer + wflocs$P7_edge
+wflocs$P8_totedge <- wflocs$P8_outer + wflocs$P8_edge
+wflocs$P7_hidecor_nohid <- wflocs$P7_hidecorner - wflocs$P7_hides - wflocs$P7_feedblock
+wflocs$P8_hidecor_nohid <- wflocs$P8_hidecorner - wflocs$P8_hides - wflocs$P8_feedblock
+#wflocs <- wflocs[c(1, 19, seq(6, 9), 21, 10, 20, seq(15, 18), 22)]
+wflocs <- wflocs[c(1, 9, 8, 7, 21, 6, 19, 10, 18, 17, 16, 22, 15, 20)]
+wflocs[wflocs <0] <- 0
+wflocs$P7_tot <- wflocs[,1] + wflocs[,2] + wflocs[,3] + wflocs[,4] + wflocs[,5] + wflocs[,6] + wflocs[,7]
+wflocs$P8_tot <- wflocs[,8] + wflocs[,9] + wflocs[,10] + wflocs[,11] + wflocs[,12] + wflocs[,13] + wflocs[,14]
+wflocs$P7_lt15m <- (wflocs$P7_lt15m / wflocs$P7_tot)*100
+wflocs$P7_totedge <- (wflocs$P7_totedge / wflocs$P7_tot)*100
+wflocs$P7_emptycorner <- (wflocs$P7_emptycorner / wflocs$P7_tot)*100
+wflocs$P7_centre <- (wflocs$P7_centre / wflocs$P7_tot)*100
+wflocs$P7_hides <- (wflocs$P7_hides / wflocs$P7_tot)*100
+wflocs$P7_feedblock <- (wflocs$P7_feedblock / wflocs$P7_tot)*100
+wflocs$P7_hidecor_nohid <- (wflocs$P7_hidecor_nohid / wflocs$P7_tot)*100
+wflocs$P8_lt15m <- (wflocs$P8_lt15m / wflocs$P8_tot)*100
+wflocs$P8_totedge <- (wflocs$P8_totedge / wflocs$P8_tot)*100
+wflocs$P8_emptycorner <- (wflocs$P8_emptycorner / wflocs$P8_tot)*100
+wflocs$P8_centre <- (wflocs$P8_centre / wflocs$P8_tot)*100
+wflocs$P8_hides <- (wflocs$P8_hides / wflocs$P8_tot)*100
+wflocs$P8_feedblock <- (wflocs$P8_feedblock / wflocs$P8_tot)*100
+wflocs$P8_hidecor_nohid <- (wflocs$P8_hidecor_nohid / wflocs$P8_tot)*100
+wdlocs <- wflocs[c(1:7)]
+fdlocs <- wflocs[c(8:14)]
+
+wdlocs <- melt(wdlocs, variable.name = 'locs', value.name = 'props')
+wdlocs$day <- c(seq(1, 14), seq(19, 26), seq(29, 43))
+wdlocs$locs <- substring(wdlocs$locs, 4)
+wdlocs$locs <- as.factor(wdlocs$locs)
+wdlocs$locs <- factor(wdlocs$locs, levels(wdlocs$locs)[c(6, 3, 5, 1, 4, 2, 7)]) 
+
+fdlocs <- melt(fdlocs, variable.name = 'locs', value.name = 'props')
+fdlocs$day <- c(seq(1, 14), seq(19, 26), seq(29, 43))
+fdlocs$locs <- substring(fdlocs$locs, 4)
+fdlocs$locs <- as.factor(fdlocs$locs)
+fdlocs$locs <- factor(fdlocs$locs, levels(fdlocs$locs)[c(6, 3, 5, 1, 4, 2, 7)])
+
+# load wild vs. farmed day locations data, reorganise and recalculate as proportions
+
+setwd('H:/Acoustic tag - Wild vs. Farmed/Data processing/Cropped data/Coded Day CSV/Outputs')
+wflocs <- read.csv('LocationsOutput-night.csv')
+wflocs <- as.data.frame(wflocs)
+wflocs$X <- as.character(wflocs$X)
+wflocs[1,1] <- 'P7_lt15m'
+wflocs[2,1] <- 'P7_gt15m'
+wflocs[10,1] <- 'P8_lt15m'
+wflocs[11,1] <- 'P8_gt15m'
+rownames(wflocs) <- wflocs$X
+wflocs[,c(1, 2, 3, 17, 25)] <- NULL
+colnames(wflocs) <- c(seq(2, 14, 1), seq(20, 26, 1), seq(30, 43, 1))
+#wflocs <- wflocs[,1:37]
+wflocs <- as.data.frame(t(wflocs))
+wflocs$P7_totedge <- wflocs$P7_outer + wflocs$P7_edge
+wflocs$P8_totedge <- wflocs$P8_outer + wflocs$P8_edge
+wflocs$P7_hidecor_nohid <- wflocs$P7_hidecorner - wflocs$P7_hides - wflocs$P7_feedblock
+wflocs$P8_hidecor_nohid <- wflocs$P8_hidecorner - wflocs$P8_hides - wflocs$P8_feedblock
+#wflocs <- wflocs[c(1, 19, seq(6, 9), 21, 10, 20, seq(15, 18), 22)]
+wflocs <- wflocs[c(1, 9, 8, 7, 21, 6, 19, 10, 18, 17, 16, 22, 15, 20)]
+wflocs[wflocs <0] <- 0
+wflocs$P7_tot <- wflocs[,1] + wflocs[,2] + wflocs[,3] + wflocs[,4] + wflocs[,5] + wflocs[,6] + wflocs[,7]
+wflocs$P8_tot <- wflocs[,8] + wflocs[,9] + wflocs[,10] + wflocs[,11] + wflocs[,12] + wflocs[,13] + wflocs[,14]
+wflocs$P7_lt15m <- (wflocs$P7_lt15m / wflocs$P7_tot)*100
+wflocs$P7_totedge <- (wflocs$P7_totedge / wflocs$P7_tot)*100
+wflocs$P7_emptycorner <- (wflocs$P7_emptycorner / wflocs$P7_tot)*100
+wflocs$P7_centre <- (wflocs$P7_centre / wflocs$P7_tot)*100
+wflocs$P7_hides <- (wflocs$P7_hides / wflocs$P7_tot)*100
+wflocs$P7_feedblock <- (wflocs$P7_feedblock / wflocs$P7_tot)*100
+wflocs$P7_hidecor_nohid <- (wflocs$P7_hidecor_nohid / wflocs$P7_tot)*100
+wflocs$P8_lt15m <- (wflocs$P8_lt15m / wflocs$P8_tot)*100
+wflocs$P8_totedge <- (wflocs$P8_totedge / wflocs$P8_tot)*100
+wflocs$P8_emptycorner <- (wflocs$P8_emptycorner / wflocs$P8_tot)*100
+wflocs$P8_centre <- (wflocs$P8_centre / wflocs$P8_tot)*100
+wflocs$P8_hides <- (wflocs$P8_hides / wflocs$P8_tot)*100
+wflocs$P8_feedblock <- (wflocs$P8_feedblock / wflocs$P8_tot)*100
+wflocs$P8_hidecor_nohid <- (wflocs$P8_hidecor_nohid / wflocs$P8_tot)*100
+wnlocs <- wflocs[c(1:7)]
+fnlocs <- wflocs[c(8:14)]
+wnlocs <- melt(wnlocs, variable.name = 'locs', value.name = 'props')
+wnlocs$day <- c(seq(2, 14), seq(20, 26), seq(30, 43))
+wnlocs$locs <- substring(wnlocs$locs, 4)
+wnlocs$locs <- as.factor(wnlocs$locs)
+wnlocs$locs <- factor(wnlocs$locs, levels(wnlocs$locs)[c(6, 3, 5, 1, 4, 2, 7)]) 
+fnlocs <- melt(fnlocs, variable.name = 'locs', value.name = 'props')
+fnlocs$day <- c(seq(2, 14), seq(20, 26), seq(30, 43))
+fnlocs$locs <- substring(fnlocs$locs, 4)
+fnlocs$locs <- as.factor(fnlocs$locs)
+fnlocs$locs <- factor(fnlocs$locs, levels(fnlocs$locs)[c(6, 3, 5, 1, 4, 2, 7)]) 
+
+rm(wflocs)
+
+# load acclimated vs. non-acclimated day locations data, reorganise and recalculate as proportions
+
+setwd('H:/Acoustic tag - Preconditioning B/Data processing/Filtered Data/Recoded Day CSV/Outputs')
+aclocs <- read.csv('LocationsOutput-day.csv')
+aclocs <- as.data.frame(aclocs)
+aclocs$X <- as.character(aclocs$X)
+aclocs[1,1] <- 'P7_lt15m'
+aclocs[2,1] <- 'P7_gt15m'
+aclocs[10,1] <- 'P8_lt15m'
+aclocs[11,1] <- 'P8_gt15m'
+rownames(aclocs) <- aclocs$X
+aclocs[,c(1, 2)] <- NULL
+colnames(aclocs) <- seq(1, 30)
+#wflocs <- wflocs[,1:37]
+aclocs <- as.data.frame(t(aclocs))
+aclocs$P7_totedge <- aclocs$P7_outer + aclocs$P7_edge
+aclocs$P8_totedge <- aclocs$P8_outer + aclocs$P8_edge
+aclocs$P7_hidecor_nohid <- aclocs$P7_hidecorner - aclocs$P7_hides - aclocs$P7_feedblock
+aclocs$P8_hidecor_nohid <- aclocs$P8_hidecorner - aclocs$P8_hides - aclocs$P8_feedblock
+#wflocs <- wflocs[c(1, 19, seq(6, 9), 21, 10, 20, seq(15, 18), 22)]
+aclocs <- aclocs[c(1, 9, 8, 7, 21, 6, 19, 10, 18, 17, 16, 22, 15, 20)]
+aclocs[aclocs <0] <- 0
+aclocs$P7_tot <- aclocs[,1] + aclocs[,2] + aclocs[,3] + aclocs[,4] + aclocs[,5] + aclocs[,6] + aclocs[,7]
+aclocs$P8_tot <- aclocs[,8] + aclocs[,9] + aclocs[,10] + aclocs[,11] + aclocs[,12] + aclocs[,13] + aclocs[,14]
+aclocs$P7_lt15m <- (aclocs$P7_lt15m / aclocs$P7_tot)*100
+aclocs$P7_totedge <- (aclocs$P7_totedge / aclocs$P7_tot)*100
+aclocs$P7_emptycorner <- (aclocs$P7_emptycorner / aclocs$P7_tot)*100
+aclocs$P7_centre <- (aclocs$P7_centre / aclocs$P7_tot)*100
+aclocs$P7_hides <- (aclocs$P7_hides / aclocs$P7_tot)*100
+aclocs$P7_feedblock <- (aclocs$P7_feedblock / aclocs$P7_tot)*100
+aclocs$P7_hidecor_nohid <- (aclocs$P7_hidecor_nohid / aclocs$P7_tot)*100
+aclocs$P8_lt15m <- (aclocs$P8_lt15m / aclocs$P8_tot)*100
+aclocs$P8_totedge <- (aclocs$P8_totedge / aclocs$P8_tot)*100
+aclocs$P8_emptycorner <- (aclocs$P8_emptycorner / aclocs$P8_tot)*100
+aclocs$P8_centre <- (aclocs$P8_centre / aclocs$P8_tot)*100
+aclocs$P8_hides <- (aclocs$P8_hides / aclocs$P8_tot)*100
+aclocs$P8_feedblock <- (aclocs$P8_feedblock / aclocs$P8_tot)*100
+aclocs$P8_hidecor_nohid <- (aclocs$P8_hidecor_nohid / aclocs$P8_tot)*100
+nadlocs <- aclocs[c(8:14)]
+acdlocs <- aclocs[c(1:7)]
+acdlocs <- melt(acdlocs, variable.name = 'locs', value.name = 'props')
+acdlocs$day <- c(seq(1, 30))
+acdlocs$locs <- substring(acdlocs$locs, 4)
+acdlocs$locs <- as.factor(acdlocs$locs)
+acdlocs$locs <- factor(acdlocs$locs, levels(acdlocs$locs)[c(6, 3, 5, 1, 4, 2, 7)]) 
+
+nadlocs <- melt(nadlocs, variable.name = 'locs', value.name = 'props')
+nadlocs$day <- c(seq(1, 30))
+nadlocs$locs <- substring(nadlocs$locs, 4)
+nadlocs$locs <- as.factor(nadlocs$locs)
+nadlocs$locs <- factor(nadlocs$locs, levels(nadlocs$locs)[c(6, 3, 5, 1, 4, 2, 7)]) 
+
+# load acclimated vs. non-acclimated night locations data, reorganise and recalculate as proportions
+
+setwd('H:/Acoustic tag - Preconditioning B/Data processing/Filtered Data/Recoded Day CSV/Outputs')
+aclocs <- read.csv('LocationsOutput-night.csv')
+aclocs <- as.data.frame(aclocs)
+aclocs$X <- as.character(aclocs$X)
+aclocs[1,1] <- 'P7_lt15m'
+aclocs[2,1] <- 'P7_gt15m'
+aclocs[10,1] <- 'P8_lt15m'
+aclocs[11,1] <- 'P8_gt15m'
+rownames(aclocs) <- aclocs$X
+aclocs[,c(1, 2, 3)] <- NULL
+colnames(aclocs) <- seq(2, 30)
+#wflocs <- wflocs[,1:37]
+aclocs <- as.data.frame(t(aclocs))
+aclocs$P7_totedge <- aclocs$P7_outer + aclocs$P7_edge
+aclocs$P8_totedge <- aclocs$P8_outer + aclocs$P8_edge
+aclocs$P7_hidecor_nohid <- aclocs$P7_hidecorner - aclocs$P7_hides - aclocs$P7_feedblock
+aclocs$P8_hidecor_nohid <- aclocs$P8_hidecorner - aclocs$P8_hides - aclocs$P8_feedblock
+#wflocs <- wflocs[c(1, 19, seq(6, 9), 21, 10, 20, seq(15, 18), 22)]
+aclocs <- aclocs[c(1, 9, 8, 7, 21, 6, 19, 10, 18, 17, 16, 22, 15, 20)]
+aclocs[aclocs <0] <- 0
+aclocs$P7_tot <- aclocs[,1] + aclocs[,2] + aclocs[,3] + aclocs[,4] + aclocs[,5] + aclocs[,6] + aclocs[,7]
+aclocs$P8_tot <- aclocs[,8] + aclocs[,9] + aclocs[,10] + aclocs[,11] + aclocs[,12] + aclocs[,13] + aclocs[,14]
+aclocs$P7_lt15m <- (aclocs$P7_lt15m / aclocs$P7_tot)*100
+aclocs$P7_totedge <- (aclocs$P7_totedge / aclocs$P7_tot)*100
+aclocs$P7_emptycorner <- (aclocs$P7_emptycorner / aclocs$P7_tot)*100
+aclocs$P7_centre <- (aclocs$P7_centre / aclocs$P7_tot)*100
+aclocs$P7_hides <- (aclocs$P7_hides / aclocs$P7_tot)*100
+aclocs$P7_feedblock <- (aclocs$P7_feedblock / aclocs$P7_tot)*100
+aclocs$P7_hidecor_nohid <- (aclocs$P7_hidecor_nohid / aclocs$P7_tot)*100
+aclocs$P8_lt15m <- (aclocs$P8_lt15m / aclocs$P8_tot)*100
+aclocs$P8_totedge <- (aclocs$P8_totedge / aclocs$P8_tot)*100
+aclocs$P8_emptycorner <- (aclocs$P8_emptycorner / aclocs$P8_tot)*100
+aclocs$P8_centre <- (aclocs$P8_centre / aclocs$P8_tot)*100
+aclocs$P8_hides <- (aclocs$P8_hides / aclocs$P8_tot)*100
+aclocs$P8_feedblock <- (aclocs$P8_feedblock / aclocs$P8_tot)*100
+aclocs$P8_hidecor_nohid <- (aclocs$P8_hidecor_nohid / aclocs$P8_tot)*100
+nanlocs <- aclocs[c(8:14)]
+acnlocs <- aclocs[c(1:7)]
+acnlocs <- melt(acnlocs, variable.name = 'locs', value.name = 'props')
+acnlocs$day <- c(seq(2, 30))
+acnlocs$locs <- substring(acnlocs$locs, 4)
+acnlocs$locs <- as.factor(acnlocs$locs)
+acnlocs$locs <- factor(acnlocs$locs, levels(acnlocs$locs)[c(6, 3, 5, 1, 4, 2, 7)]) 
+
+nanlocs <- melt(nanlocs, variable.name = 'locs', value.name = 'props')
+nanlocs$day <- c(seq(2, 30))
+nanlocs$locs <- substring(nanlocs$locs, 4)
+nanlocs$locs <- as.factor(nanlocs$locs)
+nanlocs$locs <- factor(nanlocs$locs, levels(nanlocs$locs)[c(6, 3, 5, 1, 4, 2, 7)]) 
+
+rm(aclocs)
+
+# draw stacked bar plots of wild vs. farmed
+
+plotfont <- 'Arial'
+fs <- 12
+
+#pal <- choose_palette()
+
+#npal <- rainbow_hcl(n = 7, c = 50, l = 40, start = -240, end = -19)
+npal <- diverge_hcl(7, h = c(259, 171), c = 49, l = c(34, 85), power = 1.3)
+npal <- npal[c(4, 6, 5, 7, 3, 2, 1)]
+dpal <- diverge_hcl(7, h = c(69, 360), c = 49, l = c(51, 87), power = 1.3)
+dpal <- dpal[c(4, 6, 5, 7, 3, 2, 1)]
+
+
+locplot <- function(df, leg, pcols){
+  
+  lplot <- ggplot(df, aes(x = day, y = props, fill = locs)) +
+    theme_classic() + theme(text = element_text(family = plotfont, size = fs), legend.position = 'none', plot.margin = margin(10, 5, 10, 1, 'pt')) +
+    geom_bar(stat = 'identity') +
+    scale_fill_manual(guide = guide_legend(title = NULL,  nrow = 4, keywidth = 0.75, keyheight = 0.75, label.theme = element_text(size = fs-1, angle = 0, family = plotfont)), 
+                      labels = c('below 15m', 'feed block', 'hides', 'centre', 'hide corners', 'empty corners', 'edge'), 
+                      values = c('lt15m' = pcols[[1]], 'feedblock' = pcols[[2]], 'hides' = pcols[[3]], 'centre' = pcols[[4]], 
+                                 'hidecor_nohid' = pcols[[5]], 'emptycorner' = pcols[[6]], 'totedge' = pcols[[7]])) +
+    scale_y_continuous(name = 'Time (%)', expand = c(0,0), breaks = seq(0, 100, 10)) + 
+    scale_x_discrete(name = 'Exp. day', expand = c(0,0), limits = seq(0, 43, 1), 
+                     labels = c('5', '10', '15', '20', '25', '30', '35', '40'), breaks = seq(5, 40, 5)) +
+    theme(axis.text.x = element_text(size = fs), axis.text.y = element_text(size = fs))
+  
+  if(leg == T){
+    lplot <- lplot + theme(legend.position = c(0.7, 0.75))
+  } else {
+    lplot <- lplot + theme(legend.position = 'none')
+  }
+  
+  lplot <<- lplot
+}
+
+
+locplot(wdlocs, F, dpal)
+wdlp <- lplot
+
+locplot(wnlocs, F, npal)
+wnlp <- lplot
+
+locplot(fdlocs, T, dpal)
+fdlp <- lplot
+
+locplot(fnlocs, T, npal)
+fnlp <- lplot
+
+locplot(acdlocs, F, dpal)
+acdlp <- lplot
+
+locplot(acnlocs, F, npal)
+acnlp <- lplot
+
+locplot(nadlocs, F, dpal)
+nadlp <- lplot
+
+locplot(nanlocs, F, npal)
+nanlp <- lplot
+
+
+plot_grid(fdlp, fnlp, wdlp, wnlp, nadlp, nanlp, acdlp, acnlp, labels = c('(a)', '(b)', '(c)', '(d)', '(e)', '(f)', '(g)', '(h)'),  rel_widths = c(1,1), hjust = c(rep(-4, 5), -5, rep(-4, 2)), vjust = c(rep(2.5, 8)), nrow = 4, ncol = 2, label_size = fs)
+
+
+#plot_grid(wplot, acplot, fplot, naplot, labels = c('(a)', '(c)', '(b)', '(d)'), rel_widths = c(1,1), hjust = c(-0.0, -0.5, -0.0, -0.5))
+
+
 
 
 
