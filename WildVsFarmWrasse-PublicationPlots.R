@@ -663,23 +663,30 @@ dayfile.classes <- c('NULL', 'numeric', 'factor', 'factor', 'POSIXct', 'double',
 )
 
 # Load wild vs. farmed data
-workingdir <- 'H:/Data processing/2015 Wild vs. Farmed/Cropped data/Coded Day CSV'
+workingdir <- ifelse(Sys.info()['user'] == 'Laptop', 'H:/Acoustic tag - Wild vs. Farmed/Data processing/Cropped data/Coded Day CSV', '/Volumes/My Book/Acoustic datasets/Wild vs Farmed') # change to location of data
 setwd(workingdir)
   files <- list.files(path = workingdir, pattern = '*.csv', all.files = FALSE, recursive = FALSE)
   dayfile <- data.frame()
   
   for(i in 1:length(files)){
-    daytemp <- read.csv(files[[i]], header = TRUE, sep = ",", colClasses = dayfile.classes)
+    daytemp <- fread(files[[i]])
+    #daytemp <- read.csv(files[[i]], header = TRUE, sep = ",", colClasses = dayfile.classes)
     dayfile <- rbind(dayfile, daytemp)
   }
+  
+  dayfile$EchoTime <- as.POSIXct(dayfile$EchoTime)
+  dayfile$V1 <- NULL
 
-wfdata <- dayfile[c(1, 3, 4, 10, 13, 47, 48)]
-
+wfdata <- dayfile[,c(1, 3, 4, 10, 13, 47, 48)] %>%
+  filter(Period != 8711) %>%
+  filter(Period != 8347)
+  
 hadjconst <- 24.88
 
 # readjust headings from local to global coordinates
 wfdata$HEAD <- ifelse(wfdata$HEAD-hadjconst <0, 360-(hadjconst-wfdata$HEAD), wfdata$HEAD-hadjconst)
 
+wfdata$HEIGHT <- as.factor(wfdata$HEIGHT)
 wfdata$HEIGHT <- factor(wfdata$HEIGHT, levels(wfdata$HEIGHT)[c(2, 1, 3)]) # reorder factor levels
 
 threshold <- 0.1
@@ -692,17 +699,30 @@ fhead <- subset(fhead, HEIGHT == 'S' | HEIGHT == 'N')
 
 # Load acclimated vs. non-acclimated data
 
-workingdir <- 'H:/Data processing/2016 Conditioning study B/Filtered Data/Recoded Day CSV'
+#workingdir <- 'H:/Data processing/2016 Conditioning study B/Filtered Data/Recoded Day CSV'
+workingdir <- ifelse(Sys.info()['user'] == 'Laptop', 'H:/Acoustic tag - Preconditioning B/Data processing/Filtered Data/Recoded Day CSV', '/Volumes/My Book/Acoustic datasets/Precon B') # change to location of data
 setwd(workingdir)
 files <- list.files(path = workingdir, pattern = '*.csv', all.files = FALSE, recursive = FALSE)
 dayfile <- data.frame()
 
 for(i in 1:length(files)){
-  daytemp <- read.csv(files[[i]], header = TRUE, sep = ",", colClasses = dayfile.classes)
+  #daytemp <- read.csv(files[[i]], header = TRUE, sep = ",", colClasses = dayfile.classes)
+  daytemp <- fread(files[[i]])
   dayfile <- rbind(dayfile, daytemp)
 }
 
-accdata <- dayfile[c(1, 3, 4, 10, 13, 47, 48)]
+dayfile$EchoTime <- as.POSIXct(dayfile$EchoTime)
+dayfile$V1 <- NULL
+
+accdata <- dayfile[,c(1, 3, 4, 10, 13, 47, 48)]
+
+hadjconst <- 24.88
+
+# readjust headings from local to global coordinates
+accdata$HEAD <- ifelse(accdata$HEAD-hadjconst <0, 360-(hadjconst-accdata$HEAD), accdata$HEAD-hadjconst)
+
+accdata$HEIGHT <- as.factor(accdata$HEIGHT)
+accdata$HEIGHT <- factor(accdata$HEIGHT, levels(accdata$HEIGHT)[c(2, 1, 3)]) # reorder factor levels
 
 threshold <- 0.1
 
@@ -714,51 +734,53 @@ nahead <- subset(nahead, HEIGHT == 'S' | HEIGHT == 'N')
 
 # polar plots of wild and farmed fish
 
-pplotw <- ggplot(whead, aes(x = HEAD, fill = HEIGHT))
-pplotw <- pplotw + geom_histogram(breaks = seq(0, 360, 10), size = 0.5, closed = 'left', color = 'black') + #, alpha = 0) + 
+plotfont <- 'Arial'
+
+pplotw <- ggplot(whead, aes(x = HEAD, fill = HEIGHT)) +
+  geom_histogram(breaks = seq(0, 360, 10), size = 0.5, closed = 'left', color = 'black') + #, alpha = 0) + 
   theme_minimal() + theme(axis.text.y = element_blank(), axis.title.y = element_blank(), legend.key.size = unit(1.5, 'lines'), legend.key.height = unit(1.5, 'lines')) + 
-  theme(text = element_text(family = plotfont, size = 14), plot.margin = margin(0, 0, 0, 0, 'pt'), legend.position = c(1, 0.1)) +
+  theme(text = element_text(family = plotfont, size = 14), plot.margin = margin(0, 0, 0, 0, 'pt'), legend.position = c(1.05, 0.1)) +
   scale_x_continuous('', limits = c(0, 360), expand = c(0, 0), breaks = seq(0, 330, 30), labels = c('0', '30', '60', '90', '120', '150', '180', '210', '240', '270', '300', '330'), minor_breaks = seq(0, 360, 10)) +
   scale_fill_manual(guide = guide_legend(title = 'Tide',  label.theme = element_text(size = 14, angle = 0, family = plotfont)), labels = c('Spring', 'Neap'), values = c('S' = 'gray70', 'N' = 'gray40')) +
-  scale_y_continuous(breaks = NULL) + #, limits = c(0, 40000)) +
+  scale_y_continuous('', breaks = seq(0, 25000, 2500) , limits = c(0, 25000)) +
   theme(axis.text.x = element_text(size = 14)) +
   coord_polar(theta = 'x', start = 0)
 
-pplotf <- ggplot(fhead, aes(x = HEAD, fill = HEIGHT))
-pplotf <- pplotf + geom_histogram(breaks = seq(0, 360, 10), size = 0.5, closed = 'left', color = 'black') + #, alpha = 0) + 
+pplotf <- ggplot(fhead, aes(x = HEAD, fill = HEIGHT)) +
+  geom_histogram(breaks = seq(0, 360, 10), size = 0.5, closed = 'left', color = 'black') + #, alpha = 0) + 
   theme_minimal() + theme(axis.text.y = element_blank(), axis.title.y = element_blank()) + 
   theme(text = element_text(family = plotfont, size = 14), plot.margin = margin(0, 0, 0, 0, 'pt'), legend.position = 'none') +
   scale_x_continuous('', limits = c(0, 360), expand = c(0, 0), breaks = seq(0, 330, 30), labels = c('0', '30', '60', '90', '120', '150', '180', '210', '240', '270', '300', '330'), minor_breaks = seq(0, 360, 10)) +
   scale_fill_manual(guide = guide_legend(title = 'Tide',  label.theme = element_text(size = 14, angle = 0, family = plotfont)), labels = c('Spring', 'Neap'), values = c('S' = 'gray70', 'N' = 'gray40')) +
-  scale_y_continuous(breaks = NULL) + #, limits = c(0, 40000)) +
+  scale_y_continuous('', breaks = seq(0, 20000, 2500) , limits = c(0, 20000)) +
   theme(axis.text.x = element_text(size = 14)) +
   coord_polar(theta = 'x', start = 0)
 
 # polar plots of acclimated and non-acclimated fish
 
-pplota <- ggplot(ahead, aes(x = HEAD, fill = HEIGHT))
-pplota <- pplota + geom_histogram(breaks = seq(0, 360, 10), size = 0.75, closed = 'left', color = 'black') + #, alpha = 0) + 
+pplota <- ggplot(ahead, aes(x = HEAD, fill = HEIGHT)) +
+  geom_histogram(breaks = seq(0, 360, 10), size = 0.75, closed = 'left', color = 'black') + #, alpha = 0) + 
   theme_minimal() + theme(axis.text.y = element_blank(), axis.title.y = element_blank()) + 
   theme(text = element_text(family = plotfont, size = 14), plot.margin = margin(0, 0, 0, 0, 'pt'), legend.position = 'none') +
   scale_x_continuous('', limits = c(0, 360), expand = c(0, 0), breaks = seq(0, 330, 30), labels = c('0', '30', '60', '90', '120', '150', '180', '210', '240', '270', '300', '330'), minor_breaks = seq(0, 360, 10)) +
   scale_fill_manual(guide = guide_legend(title = 'Tide',  label.theme = element_text(size = 14, angle = 0, family = plotfont)), labels = c('Spring', 'Neap'), values = c('S' = 'gray70', 'N' = 'gray40')) +
-  scale_y_continuous(breaks = NULL) + #, limits = c(0, 40000)) +
+  scale_y_continuous('', breaks = seq(0, 20000, 2500) , limits = c(0, 20000), expand = c(0, 0)) +
   theme(axis.text.x = element_text(size = 14)) +
   coord_polar(theta = 'x', start = 0)
 
-pplotna <- ggplot(nahead, aes(x = HEAD, fill = HEIGHT))
-pplotna <- pplotna + geom_histogram(breaks = seq(0, 360, 10), size = 0.75, closed = 'left', color = 'black') + #, alpha = 0) + 
+pplotna <- ggplot(nahead, aes(x = HEAD, fill = HEIGHT)) +
+  geom_histogram(breaks = seq(0, 360, 10), size = 0.75, closed = 'left', color = 'black') + #, alpha = 0) + 
   theme_minimal() + theme(axis.text.y = element_blank(), axis.title.y = element_blank()) + 
   theme(text = element_text(family = plotfont, size = 14), plot.margin = margin(0, 0, 0, 0, 'pt'), legend.position = 'none') +
   scale_x_continuous('', limits = c(0, 360), expand = c(0, 0), breaks = seq(0, 330, 30), labels = c('0', '30', '60', '90', '120', '150', '180', '210', '240', '270', '300', '330'), minor_breaks = seq(0, 360, 10)) +
   scale_fill_manual(guide = guide_legend(title = 'Tide',  label.theme = element_text(size = 14, angle = 0, family = plotfont)), labels = c('Spring', 'Neap'), values = c('S' = 'gray70', 'N' = 'gray40')) +
-  scale_y_continuous(breaks = NULL) + #, limits = c(0, 40000)) +
+  scale_y_continuous('', breaks = seq(0, 45000, 2500), limits = c(0, 45000)) +
   theme(axis.text.x = element_text(size = 14)) +
   coord_polar(theta = 'x', start = 0)
 
 # plot four polar plots and label
 
-plot_grid(pplotw, pplota, pplotf, pplotna, labels = c('(a)', '(c)', '(b)', '(d)'), rel_widths = c(1,1), hjust = c(-2, -2, -2, -2), vjust = c(5, 5, 5, 5))
+plot_grid(pplotw, pplotf, pplota, pplotna, labels = c('(a)', '(b)', '(c)', '(d)'), rel_widths = c(1,1), hjust = c(-2, -2, -2, -2), vjust = c(5, 5, 5, 5))
 plot_grid(pplotw, pplotf, labels = c('(a)', '(b)'), rel_widths = c(1,1), hjust = c(-2, -2), vjust = c(5, 5))
 
 
