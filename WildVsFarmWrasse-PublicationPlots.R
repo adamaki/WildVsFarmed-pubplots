@@ -739,7 +739,7 @@ plotfont <- 'Arial'
 pplotw <- ggplot(whead, aes(x = HEAD, fill = HEIGHT)) +
   geom_histogram(breaks = seq(0, 360, 10), size = 0.5, closed = 'left', color = 'black') + #, alpha = 0) + 
   theme_minimal() + theme(axis.text.y = element_blank(), axis.title.y = element_blank(), legend.key.size = unit(1.5, 'lines'), legend.key.height = unit(1.5, 'lines')) + 
-  theme(text = element_text(family = plotfont, size = 14), plot.margin = margin(0, 0, 0, 0, 'pt'), legend.position = c(1.05, 0.1)) +
+  theme(text = element_text(family = plotfont, size = 14), plot.margin = margin(0, 0, 0, 0, 'pt'), legend.position = c(1.1, 0.0)) +
   scale_x_continuous('', limits = c(0, 360), expand = c(0, 0), breaks = seq(0, 330, 30), labels = c('0', '30', '60', '90', '120', '150', '180', '210', '240', '270', '300', '330'), minor_breaks = seq(0, 360, 10)) +
   scale_fill_manual(guide = guide_legend(title = 'Tide',  label.theme = element_text(size = 14, angle = 0, family = plotfont)), labels = c('Spring', 'Neap'), values = c('S' = 'gray70', 'N' = 'gray40')) +
   scale_y_continuous('', breaks = seq(0, 25000, 2500) , limits = c(0, 25000)) +
@@ -759,7 +759,7 @@ pplotf <- ggplot(fhead, aes(x = HEAD, fill = HEIGHT)) +
 # polar plots of acclimated and non-acclimated fish
 
 pplota <- ggplot(ahead, aes(x = HEAD, fill = HEIGHT)) +
-  geom_histogram(breaks = seq(0, 360, 10), size = 0.75, closed = 'left', color = 'black') + #, alpha = 0) + 
+  geom_histogram(breaks = seq(0, 360, 10), size = 0.5, closed = 'left', color = 'black') + #, alpha = 0) + 
   theme_minimal() + theme(axis.text.y = element_blank(), axis.title.y = element_blank()) + 
   theme(text = element_text(family = plotfont, size = 14), plot.margin = margin(0, 0, 0, 0, 'pt'), legend.position = 'none') +
   scale_x_continuous('', limits = c(0, 360), expand = c(0, 0), breaks = seq(0, 330, 30), labels = c('0', '30', '60', '90', '120', '150', '180', '210', '240', '270', '300', '330'), minor_breaks = seq(0, 360, 10)) +
@@ -769,7 +769,7 @@ pplota <- ggplot(ahead, aes(x = HEAD, fill = HEIGHT)) +
   coord_polar(theta = 'x', start = 0)
 
 pplotna <- ggplot(nahead, aes(x = HEAD, fill = HEIGHT)) +
-  geom_histogram(breaks = seq(0, 360, 10), size = 0.75, closed = 'left', color = 'black') + #, alpha = 0) + 
+  geom_histogram(breaks = seq(0, 360, 10), size = 0.5, closed = 'left', color = 'black') + #, alpha = 0) + 
   theme_minimal() + theme(axis.text.y = element_blank(), axis.title.y = element_blank()) + 
   theme(text = element_text(family = plotfont, size = 14), plot.margin = margin(0, 0, 0, 0, 'pt'), legend.position = 'none') +
   scale_x_continuous('', limits = c(0, 360), expand = c(0, 0), breaks = seq(0, 330, 30), labels = c('0', '30', '60', '90', '120', '150', '180', '210', '240', '270', '300', '330'), minor_breaks = seq(0, 360, 10)) +
@@ -781,7 +781,34 @@ pplotna <- ggplot(nahead, aes(x = HEAD, fill = HEIGHT)) +
 # plot four polar plots and label
 
 plot_grid(pplotw, pplotf, pplota, pplotna, labels = c('(a)', '(b)', '(c)', '(d)'), rel_widths = c(1,1), hjust = c(-2, -2, -2, -2), vjust = c(5, 5, 5, 5))
-plot_grid(pplotw, pplotf, labels = c('(a)', '(b)'), rel_widths = c(1,1), hjust = c(-2, -2), vjust = c(5, 5))
+#plot_grid(pplotw, pplotf, labels = c('(a)', '(b)'), rel_widths = c(1,1), hjust = c(-2, -2), vjust = c(5, 5))
+
+
+# extract data from histograms and make table
+
+headextract <- function(inputdata){
+
+hdata <- ggplot_build(ggplot(inputdata, aes(x = HEAD, fill = HEIGHT)) +
+                        geom_histogram(breaks = c(0, seq(11.25, 348.75, 22.5), 360)))
+hdata <- hdata$data[[1]]
+hdata <- hdata[,c(3, 5, 6, 11)]
+hdata <- spread(hdata, group, count)
+colnames(hdata) <- c('xmin', 'xmax', 'spring', 'neap')
+hdata$spring <- round((hdata$spring/sum(hdata$spring))*100, 2)
+hdata$neap <- round((hdata$neap/sum(hdata$neap))*100, 2)
+hdata$range <- paste0(hdata$xmin, '-', hdata$xmax)
+hdata[,c(1, 2)] <- NULL
+hdata <- hdata[,c(3, 1, 2)]
+hdata <<- hdata
+
+}
+
+write.csv(headextract(whead), 'wildheadings.csv')
+write.csv(headextract(fhead), 'farmedheadings.csv')
+write.csv(headextract(ahead), 'acclimatedheadings.csv')
+write.csv(headextract(nahead), 'nonacclimatedheadings.csv')
+
+
 
 
 # 9. Activity by time of day for wild, hatchery acclimated and hatchery and pen acclimated
