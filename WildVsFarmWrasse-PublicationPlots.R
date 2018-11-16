@@ -45,6 +45,7 @@ library(colorspace)
 library(tidyverse)
 
 
+# Environmental probe plots------------------------------
 
 # LOAD ENVIRONMENTAL PROBE READINGS
 
@@ -262,7 +263,7 @@ ggplot() +
   annotation_custom(grobTree(textGrob('(c)', x = 0.05, y = 0.95, gp = gpar(fontsize = 18, fontfamily = 'Times New Roman'))))
 
 
-# 3. Pen layout and segmentation plot
+# 3. Pen layout and segmentation plot---------------------------
 
 #LOAD LOCATIONS CODING DATA
 locations.lookup <- read.xlsx(masterfileloc, sheet = 12, startRow = 1, cols = seq(1,7)) # read in codes from Locations Coding spreadsheet
@@ -309,7 +310,7 @@ ggplot() +
   annotation_custom(grobTree(textGrob('N', x = 0.330, y = 0.93, gp = gpar(fontsize = 18, fontfamily = 'Times New Roman'))))
 
 
-# 4. code to draw top view of pen 7 with colour-coded locations
+# 4. code to draw top view of pen 7 with colour-coded locations---------------------------
 
 par(mfrow=c(1,1))
 
@@ -342,7 +343,7 @@ polygon(c(36, 39, 39, 36), c(4.5, 4.5, 7.5, 7.5), lty = 1, lwd = 2, col = rgb(0,
 #polygon(c(13.5, 16.5, 16.5, 13.5), c(4.5, 4.5, 7.5, 7.5), lty = 1, lwd = 2, col = rgb(0, 176, 240, maxColorValue = 255)) # NW feed block
 
 
-# 6. Locations for wild vs. farmed and acclimated vs. non-acclimated B
+# 6. Locations for wild vs. farmed and acclimated vs. non-acclimated B-----------------------------------
 
 # load wild vs. farmed locations data, reorganise and recalculate as proportions
 
@@ -478,7 +479,7 @@ plot_grid(wplot, acplot, fplot, naplot, labels = c('(a)', '(c)', '(b)', '(d)'), 
 
 
 
-# 7. Hourly pen coverage night vs. day for wild vs. farmed and acclimated vs. non-acclimated
+# 7. Hourly pen coverage night vs. day for wild vs. farmed and acclimated vs. non-acclimated----------------------
 
 # load wild vs. farmed hourly coverage data
 
@@ -645,7 +646,7 @@ naplot
 plot_grid(wplot, acplot, fplot, naplot, labels = c('(a)', '(c)', '(b)', '(d)'), rel_widths = c(1,1), hjust = c(-3, -3.5, -3, -3.5))
 
 
-# 8. Polar plots of headings
+# 8. Polar plots of headings-------------------------------------
 
 # load wild vs. farmed dataset
 
@@ -811,7 +812,7 @@ write.csv(headextract(nahead), 'nonacclimatedheadings.csv')
 
 
 
-# 9. Activity by time of day for wild, hatchery acclimated and hatchery and pen acclimated
+# 9. Activity by time of day for wild, hatchery acclimated and hatchery and pen acclimated-----------------
 
 # Read in wild vs. farmed activity data
 
@@ -938,7 +939,7 @@ plot_grid(plot_grid(wpact, actleg, labels = c('(a)', ' '), hjust = c(-4, -4), vj
 
 
 
-# 10. Line plots of night and day depth and activity for non-acclimated and hatchery and pen-acclimated
+# 10. Line plots of night and day depth and activity for non-acclimated and hatchery and pen-acclimated-------------------
 
 detach('package:xlsx')
 library(openxlsx)
@@ -1101,7 +1102,7 @@ plot_grid(naccdp, accdp, naccap, accap, labels = c('(a)', '(b)', '(c)', '(d)'), 
 
 
 
-# 11. Survival for wild vs. farmed and both acclimation trials
+# 11. Survival for wild vs. farmed and both acclimation trials---------------------------
 
 t1tot <- 18
 t2atot <- 20
@@ -1109,27 +1110,27 @@ t2btot <- 17
 
 detach('package:xlsx')
 library(openxlsx)
-setwd('H:/Data processing')
+setwd('H:/')
 mortsdf <- read.xlsx('TaggingSurgeryMorts.xlsx', sheet = 1, rows = c(3, seq(6, 48)), cols = c(1, 4, 5, 6, 7, 8, 9))
 colnames(mortsdf)[1] <- 'Days_postdeployment'
 mortsdf$Days_postdeployment <- seq(1, 43)
-mortsdf$T2_Wild <- ((t1tot - mortsdf$T2_Wild)/t1tot)*100
-mortsdf$T2_Farmed <- ((t1tot - mortsdf$T2_Farmed)/t1tot)*100
-mortsdf$T3_acclimated <- ((t2atot - mortsdf$T3_acclimated)/t2atot)*100
-mortsdf$T3_nonacclimated <- ((t2atot - mortsdf$T3_nonacclimated)/t2atot)*100
-mortsdf$T4_acclimated <- ((t2btot - mortsdf$T4_acclimated)/t2btot)*100
-mortsdf$T4_nonacclimated <- ((t2btot - mortsdf$T4_nonacclimated)/t2btot)*100
+mortsdf$T2_Wild <- t1tot - mortsdf$T2_Wild
+mortsdf$T2_Farmed <- t1tot - mortsdf$T2_Farmed
+mortsdf$T3_acclimated <- t2atot - mortsdf$T3_acclimated
+mortsdf$T3_nonacclimated <- t2atot - mortsdf$T3_nonacclimated
+mortsdf$T4_acclimated <- t2btot - mortsdf$T4_acclimated
+mortsdf$T4_nonacclimated <- t2btot - mortsdf$T4_nonacclimated
 mortsdf[31:43,4:7] <- NA
 mortsdf <- melt(mortsdf, id.var = 1)
 mortsdf$variable <- c(rep('Trial 1: wild', 43), rep('Trial 1: farmed', 43), rep('Trial 2a: acclimated', 43), rep('Trial 2a: non-acclimated', 43), rep('Trial 2b: acclimated', 43), rep('Trial 2b: non-acclimated', 43))
 mortsdf$variable <- factor(mortsdf$variable, levels(as.factor(mortsdf$variable))[c(2, 1, 3, 4, 5, 6)])
-mortsdf$morts <- 100-mortsdf$value
+#mortsdf$morts <- 100-mortsdf$value
 
 # draw line plot of survival
 
 ggplot(mortsdf) +  
   scale_x_continuous('Trial Day', limits = c(1, 43)) + 
-  scale_y_continuous('Survival (%)', limits = c(40,100)) +
+  scale_y_continuous('Survival (No. of fish)', limits = c(0,20)) +
   theme_classic() + theme(text = element_text(family = plotfont, size = 12), legend.position = c(0.15, 0.2)) +
   geom_line(aes(x = Days_postdeployment, y = value, group = variable, color = variable, linetype = variable), size = 1) + #, size = 0.7, color = 'gray', linetype = 'longdash') +
   #geom_line(aes(Days_postdeployment, T2_Farmed, colour = 'Trial 1: farmed', linetype = 'Trial 1: farmed'), size = 1) + #, size = 0.7, color = 'gray', linetype = 'solid') + 
@@ -1160,7 +1161,7 @@ ggplot(mortsdf, aes(x = Days_postdeployment, y = 100-value, group = variable, fi
   theme(axis.text.x = element_text(size = 12), axis.text.y = element_text(size = 12)) # +
 
 
-# 12. Heatmap of depth over time--------------------------------
+# 12. Heatmap of depth over time----------------------------------------
 
 dayfile <- wildvsfarmed[sample(nrow(wildvsfarmed), 10000),] # random sample to reduce plot drawing time
 
@@ -1176,7 +1177,7 @@ dm
 
 
 
-# 13. Line plots of night and day depth for all three trials
+# 13. Line plots of night and day depth for all three trials---------------------------------
 
 detach('package:xlsx')
 library(openxlsx)
@@ -1258,7 +1259,11 @@ rm(mdep, sedep)
 # Read and modify trial 2b depth data
 
 setwd('H:/Acoustic tag - Preconditioning B/Data processing/Filtered Data/Recoded Day CSV/Outputs')
-mdepth <- read.xlsx('DepthTotOutput.xlsx', sheet = 1, rows = seq(1, 17, 1), cols = seq(2, 32, 1), colNames = T, rowNames = T)
+#mdepth <- read.xlsx('DepthTotOutput.xlsx', sheet = 1, rows = seq(1, 17, 1), cols = seq(2, 32, 1), colNames = T, rowNames = T)
+mdepth <- read.csv('DepthTotOutput.csv')
+rownames(mdepth) <- mdepth$X
+mdepth[,c(1, 2, 3)] <- NULL
+colnames(mdepth) <- seq(1, 30, 1)
 mdepth <- as.data.frame(t(mdepth))
 mdepth <- setDT(mdepth, keep.rownames = T)[]
 colnames(mdepth)[1] <- 'Day'
@@ -1340,21 +1345,21 @@ nacc2bdp <- dplot
 
 
 # draw depth plots for all studies
-plot_grid(wdp, fdp, acc2adp, nacc2adp, acc2bdp, nacc2bdp, labels = c('(a)', '(b)', '(c)', '(d)', '(e)', '(f)'), rel_widths = c(1,1), hjust = c(rep(-3, 5), -4), vjust = c(3, 3, 3, 3, 3, 3), nrow = 3, ncol = 2, label_size = fs)
+plot_grid(wdp, fdp, acc2adp, nacc2adp, acc2bdp, nacc2bdp, labels = c('(a) wild', '(b) farmed', '(c) hatchery acclimated', '(d) non-acclimated', '(e) hatchery & pen acclimated', '(f) non-acclimated'), rel_widths = c(1,1), hjust = c(-1.4, -1, -0.48, -0.55, -0.35, -0.52), vjust = c(3, 3, 3, 3, 3, 3), nrow = 3, ncol = 2, label_size = fs)
 
 
 
-# 14. Bar plots of individual fish night and day depth for all three trials
+# 14. Bar plots of individual fish night and day depth for all three trials----------------------------
 
 detach('package:xlsx')
 library(openxlsx)
 
-# Read in wild vs. farmed activity data
+# Read in wild vs. farmed depth data
 
 setwd('H:/Acoustic tag - Wild vs. Farmed/Data processing/Cropped data/Coded Fish CSV/Outputs')
-wfdep <- read.csv('DepthTotOutput.csv')
+wfdep <- read.csv('DepthTotOutput-fish.csv')
 rownames(wfdep) <- wfdep$ID
-wfdep$ID <- NULL
+wfdep[,c(1,2)] <- NULL
 wfdep <- t(wfdep)
 wdep <- as.data.frame(wfdep[,1:8])
 fdep <- as.data.frame(wfdep[,9:16])
@@ -1368,6 +1373,9 @@ wdep$fishID <- substring(wdep$fishID, 2)
 fdep$fishID <- substring(fdep$fishID, 2)
 wdep[,2:9] <- lapply(wdep[,2:9], function(x) {as.numeric(as.character(x))}) # convert factors to numeric
 fdep[,2:9] <- lapply(fdep[,2:9], function(x) {as.numeric(as.character(x))})
+wdep$fishID <- seq(1, nrow(wdep), 1) # assign sequential numbers as fish IDs
+fdep$fishID <- seq(1, nrow(fdep), 1) # assign sequential numbers as fish IDs
+
 
 wdep <- arrange(wdep, desc(P7_day_mean))
 wdep$fishID <- as.factor(wdep$fishID)
@@ -1384,6 +1392,7 @@ depse <- melt(wdep[,c('fishID', 'P7_dawn_se', 'P7_day_se', 'P7_dusk_se', 'P7_nig
 depse <- depse[,3]
 wdep <- cbind(mdep, depse)
 wdep$time <- substring(wdep$time, 4)
+wdep <- filter(wdep, time != 'dawn_mean' & time != 'dusk_mean') # filter out dawn and dusk data
 rm(mdep, depse)
 
 mdep <- melt(fdep[,c('fishID', 'P8_dawn_mean', 'P8_day_mean', 'P8_dusk_mean', 'P8_night_mean')], measure.vars = c('P8_dawn_mean', 'P8_day_mean', 'P8_dusk_mean', 'P8_night_mean'), variable.name = 'time', value.name = 'mean')
@@ -1391,15 +1400,16 @@ depse <- melt(fdep[,c('fishID', 'P8_dawn_se', 'P8_day_se', 'P8_dusk_se', 'P8_nig
 depse <- depse[,3]
 fdep <- cbind(mdep, depse)
 fdep$time <- substring(fdep$time, 4)
+fdep <- filter(fdep, time != 'dawn_mean' & time != 'dusk_mean') # filter out dawn and dusk data
 rm(mdep, depse)
 
 
-# Read in acclimated A activity data
+# Read in acclimated A depth data
 
 setwd('H:/Acoustic tag - Preconditioning A/Data processing/Filtered Data/Recoded Day CSV/Outputs')
 acc2adep <- read.csv('DepthTotOutput-byfish.csv')
 rownames(acc2adep) <- acc2adep$ID
-acc2adep$ID <- NULL
+acc2adep[,c(1, 2)] <- NULL
 acc2adep <- t(acc2adep)
 hacc2adep <- as.data.frame(acc2adep[,1:8])
 nacc2adep <- as.data.frame(acc2adep[,9:16])
@@ -1413,6 +1423,9 @@ hacc2adep$fishID <- substring(hacc2adep$fishID, 2)
 nacc2adep$fishID <- substring(nacc2adep$fishID, 2)
 hacc2adep[,2:9] <- lapply(hacc2adep[,2:9], function(x) {as.numeric(as.character(x))}) # convert factors to numeric
 nacc2adep[,2:9] <- lapply(nacc2adep[,2:9], function(x) {as.numeric(as.character(x))})
+hacc2adep$fishID <- seq(1, nrow(hacc2adep), 1) # assign sequential numbers as fish IDs
+nacc2adep$fishID <- seq(1, nrow(nacc2adep), 1) # assign sequential numbers as fish IDs
+
 
 hacc2adep <- arrange(hacc2adep, desc(P7_day_mean))
 hacc2adep$fishID <- as.factor(hacc2adep$fishID)
@@ -1429,6 +1442,7 @@ depse <- melt(hacc2adep[,c('fishID', 'P7_dawn_se', 'P7_day_se', 'P7_dusk_se', 'P
 depse <- depse[,3]
 hacc2adep <- cbind(mdep, depse)
 hacc2adep$time <- substring(hacc2adep$time, 4)
+hacc2adep <- filter(hacc2adep, time != 'dawn_mean' & time != 'dusk_mean') # filter out dawn and dusk data
 rm(mdep, depse)
 
 mdep <- melt(nacc2adep[,c('fishID', 'P8_dawn_mean', 'P8_day_mean', 'P8_dusk_mean', 'P8_night_mean')], measure.vars = c('P8_dawn_mean', 'P8_day_mean', 'P8_dusk_mean', 'P8_night_mean'), variable.name = 'time', value.name = 'mean')
@@ -1436,15 +1450,16 @@ depse <- melt(nacc2adep[,c('fishID', 'P8_dawn_se', 'P8_day_se', 'P8_dusk_se', 'P
 depse <- depse[,3]
 nacc2adep <- cbind(mdep, depse)
 nacc2adep$time <- substring(nacc2adep$time, 4)
+nacc2adep <- filter(nacc2adep, time != 'dawn_mean' & time != 'dusk_mean') # filter out dawn and dusk data
 rm(mdep, depse)
 
 
-# Read in acclimated B activity data
+# Read in acclimated B depth data
 
 setwd('H:/Acoustic tag - Preconditioning B/Data processing/Filtered Data/Recoded Day CSV/Outputs')
 acc2bdep <- read.csv('DepthTotOutput-byfish.csv')
 rownames(acc2bdep) <- acc2bdep$ID
-acc2bdep$ID <- NULL
+acc2bdep[,c(1,2)] <- NULL
 acc2bdep <- t(acc2bdep)
 hacc2bdep <- as.data.frame(acc2bdep[,1:8])
 nacc2bdep <- as.data.frame(acc2bdep[,9:16])
@@ -1458,6 +1473,8 @@ hacc2bdep$fishID <- substring(hacc2bdep$fishID, 2)
 nacc2bdep$fishID <- substring(nacc2bdep$fishID, 2)
 hacc2bdep[,2:9] <- lapply(hacc2bdep[,2:9], function(x) {as.numeric(as.character(x))}) # convert factors to numeric
 nacc2bdep[,2:9] <- lapply(nacc2bdep[,2:9], function(x) {as.numeric(as.character(x))})
+hacc2bdep$fishID <- seq(1, nrow(hacc2bdep), 1) # assign sequential numbers as fish IDs
+nacc2bdep$fishID <- seq(1, nrow(nacc2bdep), 1) # assign sequential numbers as fish IDs
 
 hacc2bdep <- arrange(hacc2bdep, desc(P7_day_mean))
 hacc2bdep$fishID <- as.factor(hacc2bdep$fishID)
@@ -1474,6 +1491,7 @@ depse <- melt(hacc2bdep[,c('fishID', 'P7_dawn_se', 'P7_day_se', 'P7_dusk_se', 'P
 depse <- depse[,3]
 hacc2bdep <- cbind(mdep, depse)
 hacc2bdep$time <- substring(hacc2bdep$time, 4)
+hacc2bdep <- filter(hacc2bdep, time != 'dawn_mean' & time != 'dusk_mean') # filter out dawn and dusk data
 rm(mdep, depse)
 
 mdep <- melt(nacc2bdep[,c('fishID', 'P8_dawn_mean', 'P8_day_mean', 'P8_dusk_mean', 'P8_night_mean')], measure.vars = c('P8_dawn_mean', 'P8_day_mean', 'P8_dusk_mean', 'P8_night_mean'), variable.name = 'time', value.name = 'mean')
@@ -1481,6 +1499,7 @@ depse <- melt(nacc2bdep[,c('fishID', 'P8_dawn_se', 'P8_day_se', 'P8_dusk_se', 'P
 depse <- depse[,3]
 nacc2bdep <- cbind(mdep, depse)
 nacc2bdep$time <- substring(nacc2bdep$time, 4)
+nacc2bdep <- filter(nacc2bdep, time != 'dawn_mean' & time != 'dusk_mean') # filter out dawn and dusk data
 rm(mdep, depse)
 
 # Create dataframes of significance levels
@@ -1500,9 +1519,9 @@ fishdepplot <- function(df, leg){
   fdplot <- ggplot(df, aes(x = fishID, y = mean)) +
     theme_classic() + 
     theme(text = element_text(family = plotfont, size = fs), plot.margin = margin(10, 5, 10, 1, 'pt')) + 
-    geom_bar(aes(fill = time), stat = 'identity', position = 'dodge') + 
+    geom_bar(aes(fill = time), stat = 'identity', position = 'dodge', width = 0.8) +
     geom_errorbar(aes(ymin = mean-depse, ymax = mean+depse, fill = time), width = 0.4, position = position_dodge(1)) +
-    scale_fill_manual(guide = guide_legend(title = NULL,  label.theme = element_text(size = fs, angle = 0, family = plotfont)), labels = c('Dawn', 'Day', 'Dusk', 'Night'), values = c('dawn_mean' = 'gray40', 'day_mean' = 'gray80', 'dusk_mean' = 'gray60', 'night_mean' = 'gray20')) +
+    scale_fill_manual(guide = guide_legend(title = NULL,  label.theme = element_text(size = fs, angle = 0, family = plotfont)), labels = c('Day', 'Night'), values = c('day_mean' = 'gray80', 'night_mean' = 'gray20')) +
     scale_y_reverse(name = 'Depth (m)', expand = c(0,0), limits = c(25, 0), breaks = seq(0, 25, 5)) + 
     scale_x_discrete(name = 'fish ID', expand = c(0,0), position = 'top') +
     theme(axis.text.x = element_text(size = 10), axis.text.y = element_text(size = fs)) # +
@@ -1539,13 +1558,13 @@ n2bfdp <- fdplot
 #actleg <- get_legend(wpact)
 #wpact <- wpact + theme(legend.position = 'none')
 
-plot_grid(wfdp, ffdp, h2afdp, n2afdp, h2bfdp, n2bfdp, labels = c('(a)', '(b)', '(c)', '(d)', '(e)', '(f)'),  rel_widths = c(1,1), hjust = c(rep(-4, 5), -5), vjust = c(rep(27, 6)), nrow = 3, ncol = 2, label_size = fs)
+plot_grid(wfdp, ffdp, h2afdp, n2afdp, h2bfdp, n2bfdp, labels = c('(a) wild', '(b) farmed', '(c) hatchery acclimated', '(d) non-acclimated', '(e) hatchery & pen acclimated', '(f) non-acclimated'),  rel_widths = c(1,1), hjust = c(-1.4, -1, -0.48, -0.55, -0.35, -0.52), vjust = c(rep(27, 6)), nrow = 3, ncol = 2, label_size = fs)
 
 #plot_grid(plot_grid(wpact, actleg, labels = c('(a)', ' '), hjust = c(-4, -4), vjust = c(3, 3), rel_widths = c(1.2, 0.8), scale = c(1, 0)), plot_grid(hacpact, hpacpact, labels = c('(b)', '(c)'), hjust = c(-4, -4), vjust = c(3, 3), rel_widths = c(1.13, 0.87)), nrow = 2, ncol = 1)
 
 
 
-# 15. Line plots of night and day activity for all three trials
+# 15. Line plots of night and day activity for all three trials------------------------------------
 
 detach('package:xlsx')
 library(openxlsx)
@@ -1559,7 +1578,7 @@ library(cowplot)
 
 setwd('H:/Acoustic tag - Wild vs. Farmed/Data processing/Cropped data/Coded Day CSV/Outputs')
 #mdepth <- read.xlsx('DepthTotOutput.xlsx', sheet = 1, rows = seq(1, 17, 1), cols = seq(2, 32, 1), colNames = T, rowNames = T)
-mact <- read.csv('ActivityTotOutput.csv')
+mact <- read.csv('ActivityTotOutput-se.csv')
 rownames(mact) <- mact$X
 mact[,c(1, 2, 3)] <- NULL
 colnames(mact) <- c(seq(1, 14, 1), seq(19, 26, 1), seq(29, 43, 1))
@@ -1594,7 +1613,7 @@ rm(mdep, sedep)
 # Read and modify trial 2a depth data
 
 setwd('H:/Acoustic tag - Preconditioning A/Data processing/Filtered Data/Recoded Day CSV/Outputs')
-mact <- read.csv('ActivityTotOutput-days.csv')
+mact <- read.csv('ActivityTotOutput-days-se.csv')
 rownames(mact) <- mact$X
 mact[,c(1, 2, 3, 4)] <- NULL
 colnames(mact) <- seq(1, 30, 1)
@@ -1626,7 +1645,7 @@ rm(mdep, sedep)
 # Read and modify trial 2b depth data
 
 setwd('H:/Acoustic tag - Preconditioning B/Data processing/Filtered Data/Recoded Day CSV/Outputs')
-mact <- read.csv('ActivityTotOutput-days.csv')
+mact <- read.csv('ActivityTotOutput-days-se.csv')
 rownames(mact) <- mact$X
 mact[,c(1, 2, 3)] <- NULL
 colnames(mact) <- seq(1, 30, 1)
@@ -1674,7 +1693,7 @@ mactplot <- function(df, leg, el){
   aplot <- ggplot(df, aes(x = daynum, y = mean, group = tod)) +
     theme_classic() +
     theme(text = element_text(family = plotfont, size = fs), plot.margin = margin(10, 5, 10, 1, 'pt')) +
-    scale_y_continuous(name = 'Mean activity (BL/s)', limits = c(0, 1), breaks = seq(0, 1, 0.1), expand = c(0,0)) +
+    scale_y_continuous(name = 'Mean activity (BL/s)', limits = c(0, 1.1), breaks = seq(0, 1.1, 0.1), expand = c(0,0)) +
     geom_line(aes(colour = tod), stat = 'identity', size = 1) + 
     geom_point(aes(colour = tod), size = 2) +
     geom_errorbar(aes(ymin = mean-se, ymax = mean+se, group = tod, colour = tod), width = 0.2, size = 1) +
@@ -1684,7 +1703,7 @@ mactplot <- function(df, leg, el){
   #geom_text(aes(x = daynum, y = sig), label = rep(c(' ', '*', '*', '*', '**', ' ', ' ', '***', '*', '*', '*', '**', ' ', '*', ' ', '*', '*', '*', '**', '**', ' ', ' ', ' ', ' ', ' ', '*', '*', '*', '*', '*'), 2), size = 5, hjust = 'centre')
   
   if(leg == T){
-    aplot <- aplot + theme(legend.position = c(0.9, 0.8))
+    aplot <- aplot + theme(legend.position = c(0.2, 0.8))
   } else {
     aplot <- aplot + theme(legend.position = 'none')
   }
@@ -1693,10 +1712,10 @@ mactplot <- function(df, leg, el){
   
 }
 
-mactplot(wact, F, 47)
+mactplot(wact, T, 47)
 wap <- aplot
 
-mactplot(fact, T, 47)
+mactplot(fact, F, 47)
 fap <- aplot
 
 mactplot(acc2aact, F, 30)
@@ -1713,11 +1732,14 @@ nacc2bap <- aplot
 
 
 # draw depth plots for all studies
-plot_grid(wap, fap, acc2aap, nacc2aap, acc2bap, nacc2bap, labels = c('(a)', '(b)', '(c)', '(d)', '(e)', '(f)'), rel_widths = c(1,1), hjust = c(rep(-3, 5), -4), vjust = c(3, 3, 3, 3, 3, 3), nrow = 3, ncol = 2, label_size = fs)
+plot_grid(wap, fap, acc2aap, nacc2aap, acc2bap, nacc2bap, 
+          labels = c('wild (a)', 'farmed (b)', 'hatchery acclimated (c)', 'non-acclimated (d)', 'hatchery & pen acclimated (e)', 'non-acclimated (f)'), 
+          rel_widths = c(1,1), hjust = c(-7.6, -4.9, -1.65, -2.2, -1.1, -2.3), 
+          vjust = c(3, 3, 3, 3, 3, 3), nrow = 3, ncol = 2, label_size = fs)
 
 
 
-# 16. Bar plots of individual fish night and day activity for all three trials
+# 16. Bar plots of individual fish night and day activity for all three trials--------------------------
 
 detach('package:xlsx')
 library(openxlsx)
@@ -1725,7 +1747,7 @@ library(openxlsx)
 # Read in wild vs. farmed activity data
 
 setwd('H:/Acoustic tag - Wild vs. Farmed/Data processing/Cropped data/Coded Day CSV/Outputs')
-wfact <- read.csv('ActivityTotOutput-fish.csv')
+wfact <- read.csv('ActivityTotOutput-fish-se.csv')
 rownames(wfact) <- wfact$ID
 wfact[,c(1, 2)] <- NULL
 wfact <- t(wfact)
@@ -1741,6 +1763,8 @@ wact$fishID <- substring(wact$fishID, 2)
 fact$fishID <- substring(fact$fishID, 2)
 wact[,2:9] <- lapply(wact[,2:9], function(x) {as.numeric(as.character(x))}) # convert factors to numeric
 fact[,2:9] <- lapply(fact[,2:9], function(x) {as.numeric(as.character(x))})
+wact$fishID <- seq(1, nrow(wact), 1) # assign sequential numbers as fish IDs
+fact$fishID <- seq(1, nrow(fact), 1) # assign sequential numbers as fish IDs
 
 wact <- arrange(wact, P7_day_mean)
 wact$fishID <- as.factor(wact$fishID)
@@ -1757,6 +1781,8 @@ depse <- melt(wact[,c('fishID', 'P7_dawn_se', 'P7_day_se', 'P7_dusk_se', 'P7_nig
 depse <- depse[,3]
 wact <- cbind(mdep, depse)
 wact$time <- substring(wact$time, 4)
+wact <- filter(wact, time != 'dawn_mean' & time != 'dusk_mean') # filter out dawn and dusk data
+
 rm(mdep, depse)
 
 mdep <- melt(fact[,c('fishID', 'P8_dawn_mean', 'P8_day_mean', 'P8_dusk_mean', 'P8_night_mean')], measure.vars = c('P8_dawn_mean', 'P8_day_mean', 'P8_dusk_mean', 'P8_night_mean'), variable.name = 'time', value.name = 'mean')
@@ -1764,13 +1790,14 @@ depse <- melt(fact[,c('fishID', 'P8_dawn_se', 'P8_day_se', 'P8_dusk_se', 'P8_nig
 depse <- depse[,3]
 fact <- cbind(mdep, depse)
 fact$time <- substring(fact$time, 4)
+fact <- filter(fact, time != 'dawn_mean' & time != 'dusk_mean') # filter out dawn and dusk data
 rm(mdep, depse)
 
 
 # Read in acclimated A activity data
 
 setwd('H:/Acoustic tag - Preconditioning A/Data processing/Filtered Data/Recoded Day CSV/Outputs')
-acc2aact <- read.csv('ActivityTotOutput-fish.csv')
+acc2aact <- read.csv('ActivityTotOutput-fish-se.csv')
 rownames(acc2aact) <- acc2aact$ID
 acc2aact[,c(1, 2)] <- NULL
 acc2aact <- t(acc2aact)
@@ -1786,6 +1813,8 @@ hacc2aact$fishID <- substring(hacc2aact$fishID, 2)
 nacc2aact$fishID <- substring(nacc2aact$fishID, 2)
 hacc2aact[,2:9] <- lapply(hacc2aact[,2:9], function(x) {as.numeric(as.character(x))}) # convert factors to numeric
 nacc2aact[,2:9] <- lapply(nacc2aact[,2:9], function(x) {as.numeric(as.character(x))})
+hacc2aact$fishID <- seq(1, nrow(hacc2aact), 1) # assign sequential numbers as fish IDs
+nacc2aact$fishID <- seq(1, nrow(nacc2aact), 1) # assign sequential numbers as fish IDs
 
 hacc2aact <- arrange(hacc2aact, P7_day_mean)
 hacc2aact$fishID <- as.factor(hacc2aact$fishID)
@@ -1802,6 +1831,7 @@ depse <- melt(hacc2aact[,c('fishID', 'P7_dawn_se', 'P7_day_se', 'P7_dusk_se', 'P
 depse <- depse[,3]
 hacc2aact <- cbind(mdep, depse)
 hacc2aact$time <- substring(hacc2aact$time, 4)
+hacc2aact <- filter(hacc2aact, time != 'dawn_mean' & time != 'dusk_mean') # filter out dawn and dusk data
 rm(mdep, depse)
 
 mdep <- melt(nacc2aact[,c('fishID', 'P8_dawn_mean', 'P8_day_mean', 'P8_dusk_mean', 'P8_night_mean')], measure.vars = c('P8_dawn_mean', 'P8_day_mean', 'P8_dusk_mean', 'P8_night_mean'), variable.name = 'time', value.name = 'mean')
@@ -1809,13 +1839,14 @@ depse <- melt(nacc2aact[,c('fishID', 'P8_dawn_se', 'P8_day_se', 'P8_dusk_se', 'P
 depse <- depse[,3]
 nacc2aact <- cbind(mdep, depse)
 nacc2aact$time <- substring(nacc2aact$time, 4)
+nacc2aact <- filter(nacc2aact, time != 'dawn_mean' & time != 'dusk_mean') # filter out dawn and dusk data
 rm(mdep, depse)
 
 
 # Read in acclimated B activity data
 
 setwd('H:/Acoustic tag - Preconditioning B/Data processing/Filtered Data/Recoded Day CSV/Outputs')
-acc2bact <- read.csv('ActivityTotOutput-fish.csv')
+acc2bact <- read.csv('ActivityTotOutput-fish-se.csv')
 rownames(acc2bact) <- acc2bact$ID
 acc2bact[,c(1, 2)] <- NULL
 acc2bact <- t(acc2bact)
@@ -1831,6 +1862,8 @@ hacc2bact$fishID <- substring(hacc2bact$fishID, 2)
 nacc2bact$fishID <- substring(nacc2bact$fishID, 2)
 hacc2bact[,2:9] <- lapply(hacc2bact[,2:9], function(x) {as.numeric(as.character(x))}) # convert factors to numeric
 nacc2bact[,2:9] <- lapply(nacc2bact[,2:9], function(x) {as.numeric(as.character(x))})
+hacc2bact$fishID <- seq(1, nrow(hacc2bact), 1) # assign sequential numbers as fish IDs
+nacc2bact$fishID <- seq(1, nrow(nacc2bact), 1) # assign sequential numbers as fish IDs
 
 hacc2bact <- arrange(hacc2bact, P7_day_mean)
 hacc2bact$fishID <- as.factor(hacc2bact$fishID)
@@ -1847,6 +1880,7 @@ depse <- melt(hacc2bact[,c('fishID', 'P7_dawn_se', 'P7_day_se', 'P7_dusk_se', 'P
 depse <- depse[,3]
 hacc2bact <- cbind(mdep, depse)
 hacc2bact$time <- substring(hacc2bact$time, 4)
+hacc2bact <- filter(hacc2bact, time != 'dawn_mean' & time != 'dusk_mean') # filter out dawn and dusk data
 rm(mdep, depse)
 
 mdep <- melt(nacc2bact[,c('fishID', 'P8_dawn_mean', 'P8_day_mean', 'P8_dusk_mean', 'P8_night_mean')], measure.vars = c('P8_dawn_mean', 'P8_day_mean', 'P8_dusk_mean', 'P8_night_mean'), variable.name = 'time', value.name = 'mean')
@@ -1854,6 +1888,7 @@ depse <- melt(nacc2bact[,c('fishID', 'P8_dawn_se', 'P8_day_se', 'P8_dusk_se', 'P
 depse <- depse[,3]
 nacc2bact <- cbind(mdep, depse)
 nacc2bact$time <- substring(nacc2bact$time, 4)
+nacc2bact <- filter(nacc2bact, time != 'dawn_mean' & time != 'dusk_mean') # filter out dawn and dusk data
 rm(mdep, depse)
 
 # Create dataframes of significance levels
@@ -1875,7 +1910,7 @@ fishactplot <- function(df, leg){
     theme(text = element_text(family = plotfont, size = fs), plot.margin = margin(10, 5, 10, 1, 'pt')) + 
     geom_bar(aes(fill = time), stat = 'identity', position = 'dodge') + 
     geom_errorbar(aes(ymin = mean-depse, ymax = mean+depse, fill = time), width = 0.4, position = position_dodge(1)) +
-    scale_fill_manual(guide = guide_legend(title = NULL,  label.theme = element_text(size = fs, angle = 0, family = plotfont)), labels = c('Dawn', 'Day', 'Dusk', 'Night'), values = c('dawn_mean' = 'gray40', 'day_mean' = 'gray80', 'dusk_mean' = 'gray60', 'night_mean' = 'gray20')) +
+    scale_fill_manual(guide = guide_legend(title = NULL,  label.theme = element_text(size = fs, angle = 0, family = plotfont)), labels = c('Day', 'Night'), values = c('day_mean' = 'gray80', 'night_mean' = 'gray20')) +
     scale_y_continuous(name = 'Activity (BL/s)', expand = c(0,0), limits = c(0, 1), breaks = seq(0, 1, 0.1)) + 
     scale_x_discrete(name = 'fish ID', expand = c(0,0)) +
     theme(axis.text.x = element_text(size = 10), axis.text.y = element_text(size = fs)) # +
@@ -1909,11 +1944,11 @@ fishactplot(nacc2bact, F)
 n2bfap <- faplot
 
 
-plot_grid(wfap, ffap, h2afap, n2afap, h2bfap, n2bfap, labels = c('(a)', '(b)', '(c)', '(d)', '(e)', '(f)'),  rel_widths = c(1,1), hjust = c(rep(-4, 5), -5), vjust = c(rep(2.5, 6)), nrow = 3, ncol = 2, label_size = fs)
+plot_grid(wfap, ffap, h2afap, n2afap, h2bfap, n2bfap, labels = c('(a) wild', '(b) farmed', '(c) hatchery acclimated', '(d) non-acclimated', '(e) hatchery & pen acclimated', '(f) non-acclimated'),  rel_widths = c(1,1), hjust = c(-1.4, -1, -0.48, -0.55, -0.35, -0.52), vjust = c(rep(2.5, 6)), nrow = 3, ncol = 2, label_size = fs)
 
 
 
-# 17. Night and day Locations for wild vs. farmed and acclimated vs. non-acclimated B
+# 17. Night and day Locations for wild vs. farmed and acclimated vs. non-acclimated B--------------------------
 
 # load wild vs. farmed day locations data, reorganise and recalculate as proportions
 
@@ -1934,41 +1969,41 @@ wflocs$P7_totedge <- wflocs$P7_outer + wflocs$P7_edge
 wflocs$P8_totedge <- wflocs$P8_outer + wflocs$P8_edge
 wflocs$P7_hidecor_nohid <- wflocs$P7_hidecorner - wflocs$P7_hides - wflocs$P7_feedblock
 wflocs$P8_hidecor_nohid <- wflocs$P8_hidecorner - wflocs$P8_hides - wflocs$P8_feedblock
-#wflocs <- wflocs[c(1, 19, seq(6, 9), 21, 10, 20, seq(15, 18), 22)]
-wflocs <- wflocs[c(1, 9, 8, 7, 21, 6, 19, 10, 18, 17, 16, 22, 15, 20)]
+#wflocs <- wflocs[c(1, 9, 8, 7, 21, 6, 19, 10, 18, 17, 16, 22, 15, 20)]
+wflocs <- wflocs[c(1, 7, 5, 6, 19,  10, 16, 14, 15, 20)]
 wflocs[wflocs <0] <- 0
-wflocs$P7_tot <- wflocs[,1] + wflocs[,2] + wflocs[,3] + wflocs[,4] + wflocs[,5] + wflocs[,6] + wflocs[,7]
-wflocs$P8_tot <- wflocs[,8] + wflocs[,9] + wflocs[,10] + wflocs[,11] + wflocs[,12] + wflocs[,13] + wflocs[,14]
+wflocs$P7_tot <- wflocs[,1] + wflocs[,2] + wflocs[,3] + wflocs[,4] + wflocs[,5]
+wflocs$P8_tot <- wflocs[,6] + wflocs[,7] + wflocs[,8] + wflocs[,9] + wflocs[,10]
 wflocs$P7_lt15m <- (wflocs$P7_lt15m / wflocs$P7_tot)*100
 wflocs$P7_totedge <- (wflocs$P7_totedge / wflocs$P7_tot)*100
 wflocs$P7_emptycorner <- (wflocs$P7_emptycorner / wflocs$P7_tot)*100
 wflocs$P7_centre <- (wflocs$P7_centre / wflocs$P7_tot)*100
-wflocs$P7_hides <- (wflocs$P7_hides / wflocs$P7_tot)*100
-wflocs$P7_feedblock <- (wflocs$P7_feedblock / wflocs$P7_tot)*100
-wflocs$P7_hidecor_nohid <- (wflocs$P7_hidecor_nohid / wflocs$P7_tot)*100
+#wflocs$P7_hides <- (wflocs$P7_hides / wflocs$P7_tot)*100
+#wflocs$P7_feedblock <- (wflocs$P7_feedblock / wflocs$P7_tot)*100
+wflocs$P7_hidecorner <- (wflocs$P7_hidecorner / wflocs$P7_tot)*100
 wflocs$P8_lt15m <- (wflocs$P8_lt15m / wflocs$P8_tot)*100
 wflocs$P8_totedge <- (wflocs$P8_totedge / wflocs$P8_tot)*100
 wflocs$P8_emptycorner <- (wflocs$P8_emptycorner / wflocs$P8_tot)*100
 wflocs$P8_centre <- (wflocs$P8_centre / wflocs$P8_tot)*100
-wflocs$P8_hides <- (wflocs$P8_hides / wflocs$P8_tot)*100
-wflocs$P8_feedblock <- (wflocs$P8_feedblock / wflocs$P8_tot)*100
-wflocs$P8_hidecor_nohid <- (wflocs$P8_hidecor_nohid / wflocs$P8_tot)*100
-wdlocs <- wflocs[c(1:7)]
-fdlocs <- wflocs[c(8:14)]
+#wflocs$P8_hides <- (wflocs$P8_hides / wflocs$P8_tot)*100
+#wflocs$P8_feedblock <- (wflocs$P8_feedblock / wflocs$P8_tot)*100
+wflocs$P8_hidecorner <- (wflocs$P8_hidecorner / wflocs$P8_tot)*100
+wdlocs <- wflocs[c(1:5)]
+fdlocs <- wflocs[c(6:10)]
 
 wdlocs <- melt(wdlocs, variable.name = 'locs', value.name = 'props')
 wdlocs$day <- c(seq(1, 14), seq(19, 26), seq(29, 43))
 wdlocs$locs <- substring(wdlocs$locs, 4)
 wdlocs$locs <- as.factor(wdlocs$locs)
-wdlocs$locs <- factor(wdlocs$locs, levels(wdlocs$locs)[c(6, 3, 5, 1, 4, 2, 7)]) 
+wdlocs$locs <- factor(wdlocs$locs, levels(wdlocs$locs)[c(4, 1, 3, 2, 5)]) 
 
 fdlocs <- melt(fdlocs, variable.name = 'locs', value.name = 'props')
 fdlocs$day <- c(seq(1, 14), seq(19, 26), seq(29, 43))
 fdlocs$locs <- substring(fdlocs$locs, 4)
 fdlocs$locs <- as.factor(fdlocs$locs)
-fdlocs$locs <- factor(fdlocs$locs, levels(fdlocs$locs)[c(6, 3, 5, 1, 4, 2, 7)])
+fdlocs$locs <- factor(fdlocs$locs, levels(fdlocs$locs)[c(4, 1, 3, 2, 5)])
 
-# load wild vs. farmed day locations data, reorganise and recalculate as proportions
+# load wild vs. farmed night locations data, reorganise and recalculate as proportions
 
 setwd('H:/Acoustic tag - Wild vs. Farmed/Data processing/Cropped data/Coded Day CSV/Outputs')
 wflocs <- read.csv('LocationsOutput-night.csv')
@@ -1987,37 +2022,37 @@ wflocs$P7_totedge <- wflocs$P7_outer + wflocs$P7_edge
 wflocs$P8_totedge <- wflocs$P8_outer + wflocs$P8_edge
 wflocs$P7_hidecor_nohid <- wflocs$P7_hidecorner - wflocs$P7_hides - wflocs$P7_feedblock
 wflocs$P8_hidecor_nohid <- wflocs$P8_hidecorner - wflocs$P8_hides - wflocs$P8_feedblock
-#wflocs <- wflocs[c(1, 19, seq(6, 9), 21, 10, 20, seq(15, 18), 22)]
-wflocs <- wflocs[c(1, 9, 8, 7, 21, 6, 19, 10, 18, 17, 16, 22, 15, 20)]
+#wflocs <- wflocs[c(1, 9, 8, 7, 21, 6, 19, 10, 18, 17, 16, 22, 15, 20)]
+wflocs <- wflocs[c(1, 7, 5, 6, 19,  10, 16, 14, 15, 20)]
 wflocs[wflocs <0] <- 0
-wflocs$P7_tot <- wflocs[,1] + wflocs[,2] + wflocs[,3] + wflocs[,4] + wflocs[,5] + wflocs[,6] + wflocs[,7]
-wflocs$P8_tot <- wflocs[,8] + wflocs[,9] + wflocs[,10] + wflocs[,11] + wflocs[,12] + wflocs[,13] + wflocs[,14]
+wflocs$P7_tot <- wflocs[,1] + wflocs[,2] + wflocs[,3] + wflocs[,4] + wflocs[,5]
+wflocs$P8_tot <- wflocs[,6] + wflocs[,7] + wflocs[,8] + wflocs[,9] + wflocs[,10] 
 wflocs$P7_lt15m <- (wflocs$P7_lt15m / wflocs$P7_tot)*100
 wflocs$P7_totedge <- (wflocs$P7_totedge / wflocs$P7_tot)*100
 wflocs$P7_emptycorner <- (wflocs$P7_emptycorner / wflocs$P7_tot)*100
 wflocs$P7_centre <- (wflocs$P7_centre / wflocs$P7_tot)*100
-wflocs$P7_hides <- (wflocs$P7_hides / wflocs$P7_tot)*100
-wflocs$P7_feedblock <- (wflocs$P7_feedblock / wflocs$P7_tot)*100
-wflocs$P7_hidecor_nohid <- (wflocs$P7_hidecor_nohid / wflocs$P7_tot)*100
+#wflocs$P7_hides <- (wflocs$P7_hides / wflocs$P7_tot)*100
+#wflocs$P7_feedblock <- (wflocs$P7_feedblock / wflocs$P7_tot)*100
+wflocs$P7_hidecorner <- (wflocs$P7_hidecorner / wflocs$P7_tot)*100
 wflocs$P8_lt15m <- (wflocs$P8_lt15m / wflocs$P8_tot)*100
 wflocs$P8_totedge <- (wflocs$P8_totedge / wflocs$P8_tot)*100
 wflocs$P8_emptycorner <- (wflocs$P8_emptycorner / wflocs$P8_tot)*100
 wflocs$P8_centre <- (wflocs$P8_centre / wflocs$P8_tot)*100
-wflocs$P8_hides <- (wflocs$P8_hides / wflocs$P8_tot)*100
-wflocs$P8_feedblock <- (wflocs$P8_feedblock / wflocs$P8_tot)*100
-wflocs$P8_hidecor_nohid <- (wflocs$P8_hidecor_nohid / wflocs$P8_tot)*100
-wnlocs <- wflocs[c(1:7)]
-fnlocs <- wflocs[c(8:14)]
+#wflocs$P8_hides <- (wflocs$P8_hides / wflocs$P8_tot)*100
+#wflocs$P8_feedblock <- (wflocs$P8_feedblock / wflocs$P8_tot)*100
+wflocs$P8_hidecorner <- (wflocs$P8_hidecorner / wflocs$P8_tot)*100
+wnlocs <- wflocs[c(1:5)]
+fnlocs <- wflocs[c(6:10)]
 wnlocs <- melt(wnlocs, variable.name = 'locs', value.name = 'props')
 wnlocs$day <- c(seq(2, 14), seq(20, 26), seq(30, 43))
 wnlocs$locs <- substring(wnlocs$locs, 4)
 wnlocs$locs <- as.factor(wnlocs$locs)
-wnlocs$locs <- factor(wnlocs$locs, levels(wnlocs$locs)[c(6, 3, 5, 1, 4, 2, 7)]) 
+wnlocs$locs <- factor(wnlocs$locs, levels(wnlocs$locs)[c(4, 1, 3, 2, 5)]) 
 fnlocs <- melt(fnlocs, variable.name = 'locs', value.name = 'props')
 fnlocs$day <- c(seq(2, 14), seq(20, 26), seq(30, 43))
 fnlocs$locs <- substring(fnlocs$locs, 4)
 fnlocs$locs <- as.factor(fnlocs$locs)
-fnlocs$locs <- factor(fnlocs$locs, levels(fnlocs$locs)[c(6, 3, 5, 1, 4, 2, 7)]) 
+fnlocs$locs <- factor(fnlocs$locs, levels(fnlocs$locs)[c(4, 1, 3, 2, 5)]) 
 
 rm(wflocs)
 
@@ -2147,9 +2182,9 @@ locplot <- function(df, leg, pcols){
     theme_classic() + theme(text = element_text(family = plotfont, size = fs), legend.position = 'none', plot.margin = margin(10, 5, 10, 1, 'pt')) +
     geom_bar(stat = 'identity') +
     scale_fill_manual(guide = guide_legend(title = NULL,  nrow = 4, keywidth = 0.75, keyheight = 0.75, label.theme = element_text(size = fs-1, angle = 0, family = plotfont)), 
-                      labels = c('below 15m', 'feed block', 'hides', 'centre', 'hide corners', 'empty corners', 'edge'), 
-                      values = c('lt15m' = pcols[[1]], 'feedblock' = pcols[[2]], 'hides' = pcols[[3]], 'centre' = pcols[[4]], 
-                                 'hidecor_nohid' = pcols[[5]], 'emptycorner' = pcols[[6]], 'totedge' = pcols[[7]])) +
+                      labels = c('below 15m', 'centre', 'hide corners', 'empty corners', 'edge'), 
+                      values = c('lt15m' = pcols[[1]], 'centre' = pcols[[4]], 
+                                 'hidecorner' = pcols[[5]], 'emptycorner' = pcols[[6]], 'totedge' = pcols[[7]])) +
     scale_y_continuous(name = 'Time (%)', expand = c(0,0), breaks = seq(0, 100, 10)) + 
     scale_x_discrete(name = 'Exp. day', expand = c(0,0), limits = seq(0, 43, 1), 
                      labels = c('5', '10', '15', '20', '25', '30', '35', '40'), breaks = seq(5, 40, 5)) +
@@ -2198,7 +2233,7 @@ plot_grid(fdlp, fnlp, wdlp, wnlp, nadlp, nanlp, acdlp, acnlp, labels = c('(a)', 
 
 
 
-# 18. Night and day Locations of individual fish for wild vs. farmed and acclimated vs. non-acclimated B
+# 18. Night and day Locations of individual fish for wild vs. farmed and acclimated vs. non-acclimated B----------------------
 
 # load wild vs. farmed day locations data, reorganise and recalculate as proportions
 
@@ -2521,5 +2556,7 @@ locfplot(nanlocs, F, npal)
 nanflp <- lfplot
 
 
-plot_grid(fdflp, fnflp, wdflp, wnflp, nadflp, nanflp, hadflp, hanflp, labels = c('(a)', '(b)', '(c)', '(d)', '(e)', '(f)', '(g)', '(h)'),  rel_widths = c(1,1), hjust = c(rep(-4, 5), -5, rep(-4, 2)), vjust = c(rep(2.5, 8)), nrow = 4, ncol = 2, label_size = fs)
+fig7 <- plot_grid(fdflp, fnflp, wdflp, wnflp, nadflp, nanflp, hadflp, hanflp, labels = c('(a)', '(b)', '(c)', '(d)', '(e)', '(f)', '(g)', '(h)'),  rel_widths = c(1,1), hjust = c(rep(-4, 5), -5, rep(-4, 2)), vjust = c(rep(2.5, 8)), nrow = 4, ncol = 2, label_size = fs)
+
+saveRDS(fig7, 'G:/Publications/Wild vs. Farmed/R/fig7.rds')
 
