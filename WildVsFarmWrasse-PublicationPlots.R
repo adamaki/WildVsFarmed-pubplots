@@ -23,8 +23,9 @@
 # 14. Bar plots of individual fish night and day depth for all three trials
 # 15. Line plots of night and day activity for all three trials
 # 16. Bar plots of individual fish night and day activity for all three trials
-
-
+# 17. Night and day Locations for wild vs. farmed and acclimated vs. non-acclimated B
+# 18. Night and day Locations of individual fish for wild vs. farmed and acclimated vs. non-acclimated B
+# 19. Examples of KUD plots for wild, farmed, non-acclimated and hatchery and pen acclimated
 
 
 # 1. Environmental probe plots
@@ -43,6 +44,9 @@ library(cowplot)
 library(data.table)
 library(colorspace)
 library(tidyverse)
+library(adehabitat)
+library(adehabitatHR)
+library(pryr)
 
 
 # Environmental probe plots------------------------------
@@ -678,7 +682,7 @@ setwd(workingdir)
   dayfile$EchoTime <- as.POSIXct(dayfile$EchoTime)
   dayfile$V1 <- NULL
 
-wfdata <- dayfile[,c(1, 3, 4, 10, 13, 47, 48)] %>%
+wfdata <- dayfile[,c(1, 3, 4, 10, 12, 13, 47, 48)] %>%
   filter(Period != 8711) %>%
   filter(Period != 8347)
   
@@ -690,11 +694,11 @@ wfdata$HEAD <- ifelse(wfdata$HEAD-hadjconst <0, 360-(hadjconst-wfdata$HEAD), wfd
 wfdata$HEIGHT <- as.factor(wfdata$HEIGHT)
 wfdata$HEIGHT <- factor(wfdata$HEIGHT, levels(wfdata$HEIGHT)[c(2, 1, 3)]) # reorder factor levels
 
-threshold <- 0.1
+threshold <- 1
 
-whead <- subset(wfdata, PEN == 7 & MSEC >= threshold)
+whead <- subset(wfdata, PEN == 7 & BLSEC >= threshold)
 whead <- subset(whead, HEIGHT == 'S' | HEIGHT == 'N')
-fhead <- subset(wfdata, PEN == 8 & MSEC >= threshold)
+fhead <- subset(wfdata, PEN == 8 & BLSEC >= threshold)
 fhead <- subset(fhead, HEIGHT == 'S' | HEIGHT == 'N')
 
 
@@ -715,7 +719,7 @@ for(i in 1:length(files)){
 dayfile$EchoTime <- as.POSIXct(dayfile$EchoTime)
 dayfile$V1 <- NULL
 
-accdata <- dayfile[,c(1, 3, 4, 10, 13, 47, 48)]
+accdata <- dayfile[,c(1, 3, 4, 10, 12, 13, 47, 48)]
 
 hadjconst <- 24.88
 
@@ -725,11 +729,11 @@ accdata$HEAD <- ifelse(accdata$HEAD-hadjconst <0, 360-(hadjconst-accdata$HEAD), 
 accdata$HEIGHT <- as.factor(accdata$HEIGHT)
 accdata$HEIGHT <- factor(accdata$HEIGHT, levels(accdata$HEIGHT)[c(2, 1, 3)]) # reorder factor levels
 
-threshold <- 0.1
+threshold <- 1
 
-ahead <- subset(accdata, PEN == 7 & MSEC >= threshold)
+ahead <- subset(accdata, PEN == 7 & BLSEC >= threshold)
 ahead <- subset(ahead, HEIGHT == 'S' | HEIGHT == 'N')
-nahead <- subset(accdata, PEN == 8 & MSEC >= threshold)
+nahead <- subset(accdata, PEN == 8 & BLSEC >= threshold)
 nahead <- subset(nahead, HEIGHT == 'S' | HEIGHT == 'N')
 
 
@@ -743,7 +747,7 @@ pplotw <- ggplot(whead, aes(x = HEAD, fill = HEIGHT)) +
   theme(text = element_text(family = plotfont, size = 14), plot.margin = margin(0, 0, 0, 0, 'pt'), legend.position = c(1.1, 0.0)) +
   scale_x_continuous('', limits = c(0, 360), expand = c(0, 0), breaks = seq(0, 330, 30), labels = c('0', '30', '60', '90', '120', '150', '180', '210', '240', '270', '300', '330'), minor_breaks = seq(0, 360, 10)) +
   scale_fill_manual(guide = guide_legend(title = 'Tide',  label.theme = element_text(size = 14, angle = 0, family = plotfont)), labels = c('Spring', 'Neap'), values = c('S' = 'gray70', 'N' = 'gray40')) +
-  scale_y_continuous('', breaks = seq(0, 25000, 2500) , limits = c(0, 25000)) +
+  scale_y_continuous('', breaks = seq(0, 11000, 2500) , limits = c(0, 11000)) +
   theme(axis.text.x = element_text(size = 14)) +
   coord_polar(theta = 'x', start = 0)
 
@@ -753,7 +757,7 @@ pplotf <- ggplot(fhead, aes(x = HEAD, fill = HEIGHT)) +
   theme(text = element_text(family = plotfont, size = 14), plot.margin = margin(0, 0, 0, 0, 'pt'), legend.position = 'none') +
   scale_x_continuous('', limits = c(0, 360), expand = c(0, 0), breaks = seq(0, 330, 30), labels = c('0', '30', '60', '90', '120', '150', '180', '210', '240', '270', '300', '330'), minor_breaks = seq(0, 360, 10)) +
   scale_fill_manual(guide = guide_legend(title = 'Tide',  label.theme = element_text(size = 14, angle = 0, family = plotfont)), labels = c('Spring', 'Neap'), values = c('S' = 'gray70', 'N' = 'gray40')) +
-  scale_y_continuous('', breaks = seq(0, 20000, 2500) , limits = c(0, 20000)) +
+  scale_y_continuous('', breaks = seq(0, 11000, 2500) , limits = c(0, 11000)) +
   theme(axis.text.x = element_text(size = 14)) +
   coord_polar(theta = 'x', start = 0)
 
@@ -765,7 +769,7 @@ pplota <- ggplot(ahead, aes(x = HEAD, fill = HEIGHT)) +
   theme(text = element_text(family = plotfont, size = 14), plot.margin = margin(0, 0, 0, 0, 'pt'), legend.position = 'none') +
   scale_x_continuous('', limits = c(0, 360), expand = c(0, 0), breaks = seq(0, 330, 30), labels = c('0', '30', '60', '90', '120', '150', '180', '210', '240', '270', '300', '330'), minor_breaks = seq(0, 360, 10)) +
   scale_fill_manual(guide = guide_legend(title = 'Tide',  label.theme = element_text(size = 14, angle = 0, family = plotfont)), labels = c('Spring', 'Neap'), values = c('S' = 'gray70', 'N' = 'gray40')) +
-  scale_y_continuous('', breaks = seq(0, 20000, 2500) , limits = c(0, 20000), expand = c(0, 0)) +
+  scale_y_continuous('', breaks = seq(0, 11000, 2500) , limits = c(0, 11000), expand = c(0, 0)) +
   theme(axis.text.x = element_text(size = 14)) +
   coord_polar(theta = 'x', start = 0)
 
@@ -775,7 +779,7 @@ pplotna <- ggplot(nahead, aes(x = HEAD, fill = HEIGHT)) +
   theme(text = element_text(family = plotfont, size = 14), plot.margin = margin(0, 0, 0, 0, 'pt'), legend.position = 'none') +
   scale_x_continuous('', limits = c(0, 360), expand = c(0, 0), breaks = seq(0, 330, 30), labels = c('0', '30', '60', '90', '120', '150', '180', '210', '240', '270', '300', '330'), minor_breaks = seq(0, 360, 10)) +
   scale_fill_manual(guide = guide_legend(title = 'Tide',  label.theme = element_text(size = 14, angle = 0, family = plotfont)), labels = c('Spring', 'Neap'), values = c('S' = 'gray70', 'N' = 'gray40')) +
-  scale_y_continuous('', breaks = seq(0, 45000, 2500), limits = c(0, 45000)) +
+  scale_y_continuous('', breaks = seq(0, 25000, 2500), limits = c(0, 25000)) +
   theme(axis.text.x = element_text(size = 14)) +
   coord_polar(theta = 'x', start = 0)
 
@@ -1521,7 +1525,7 @@ fishdepplot <- function(df, leg){
     theme(text = element_text(family = plotfont, size = fs), plot.margin = margin(10, 5, 10, 1, 'pt')) + 
     geom_bar(aes(fill = time), stat = 'identity', position = 'dodge', width = 0.8) +
     geom_errorbar(aes(ymin = mean-depse, ymax = mean+depse, fill = time), width = 0.4, position = position_dodge(1)) +
-    scale_fill_manual(guide = guide_legend(title = NULL,  label.theme = element_text(size = fs, angle = 0, family = plotfont)), labels = c('Day', 'Night'), values = c('day_mean' = 'gray80', 'night_mean' = 'gray20')) +
+    scale_fill_manual(guide = guide_legend(title = NULL,  label.theme = element_text(size = fs, angle = 0, family = plotfont)), labels = c('Day', 'Night'), values = c('day_mean' = 'gray80', 'night_mean' = 'gray35')) +
     scale_y_reverse(name = 'Depth (m)', expand = c(0,0), limits = c(25, 0), breaks = seq(0, 25, 5)) + 
     scale_x_discrete(name = 'fish ID', expand = c(0,0), position = 'top') +
     theme(axis.text.x = element_text(size = 10), axis.text.y = element_text(size = fs)) # +
@@ -1561,6 +1565,35 @@ n2bfdp <- fdplot
 plot_grid(wfdp, ffdp, h2afdp, n2afdp, h2bfdp, n2bfdp, labels = c('(a) wild', '(b) farmed', '(c) hatchery acclimated', '(d) non-acclimated', '(e) hatchery & pen acclimated', '(f) non-acclimated'),  rel_widths = c(1,1), hjust = c(-1.4, -1, -0.48, -0.55, -0.35, -0.52), vjust = c(rep(27, 6)), nrow = 3, ncol = 2, label_size = fs)
 
 #plot_grid(plot_grid(wpact, actleg, labels = c('(a)', ' '), hjust = c(-4, -4), vjust = c(3, 3), rel_widths = c(1.2, 0.8), scale = c(1, 0)), plot_grid(hacpact, hpacpact, labels = c('(b)', '(c)'), hjust = c(-4, -4), vjust = c(3, 3), rel_widths = c(1.13, 0.87)), nrow = 2, ncol = 1)
+
+
+wdep$time <- paste0('wild\n', wdep$time)
+fdep$time <- paste0('farmed\n', fdep$time)
+hacc2adep$time <- paste0('hatchery\nacclimated\n', hacc2adep$time)
+nacc2adep$time <- paste0('non-\nacclimated\n(2a)\n', nacc2adep$time)
+hacc2bdep$time <- paste0('hatchery\n& pen\nacclimated\n', hacc2bdep$time)
+nacc2bdep$time <- paste0('non-\nacclimated\n(2b)\n', nacc2bdep$time)
+
+boxdata <- rbind(wdep[,c(2, 3)], fdep[,c(2, 3)], hacc2adep[,c(2, 3)], nacc2adep[,c(2, 3)], hacc2bdep[,c(2, 3)], nacc2bdep[,c(2, 3)])
+boxdata$time <- str_sub(boxdata$time, 1, str_length(boxdata$time)-5)
+boxdata$time <- as.factor(boxdata$time)
+boxdata$time <- factor(boxdata$time, levels(boxdata$time)[c(11, 12, 1, 2, 5, 6, 7, 8, 3, 4, 9, 10)])
+boxdata$TOD <- ifelse(str_detect(boxdata$time, 'day') == T, 'day', 'night')
+
+boxdep <- ggplot(boxdata, aes(x = time, y = mean)) + 
+  theme_classic() + 
+  theme(text = element_text(family = plotfont, size = fs), plot.margin = margin(-10, 30, 10, 30, 'pt'), 
+        axis.text.x = element_text(angle = 0, hjust = 0.5), legend.position = 'none') + 
+  geom_boxplot(outlier.shape = NA, aes(fill = TOD), width = 0.4) +
+  scale_y_reverse(name = 'Depth (m)', expand = c(0,0), limits = c(25, 0), breaks = seq(0, 25, 5)) +
+  scale_x_discrete(name = '', position = 'top') +
+  scale_fill_manual(values = c('gray90', 'gray35'))
+
+plot_grid(plot_grid(wfdp, ffdp, h2afdp, n2afdp, h2bfdp, n2bfdp, 
+          labels = c('(a) wild', '(b) farmed', '(c) hatchery acclimated', '(d) non-acclimated', '(e) hatchery & pen acclimated', '(f) non-acclimated'),  
+          rel_widths = c(1,1), hjust = c(-1.4, -1, -0.48, -0.55, -0.35, -0.52), 
+          vjust = c(rep(21, 7)), nrow = 3, ncol = 2, label_size = fs), boxdep, labels = c('', '(g)'), 
+          nrow = 2, ncol = 1, rel_heights = c(0.75, 0.25), label_size = fs, vjust = 20, hjust = -5)
 
 
 
@@ -1947,6 +1980,36 @@ n2bfap <- faplot
 plot_grid(wfap, ffap, h2afap, n2afap, h2bfap, n2bfap, labels = c('(a) wild', '(b) farmed', '(c) hatchery acclimated', '(d) non-acclimated', '(e) hatchery & pen acclimated', '(f) non-acclimated'),  rel_widths = c(1,1), hjust = c(-1.4, -1, -0.48, -0.55, -0.35, -0.52), vjust = c(rep(2.5, 6)), nrow = 3, ncol = 2, label_size = fs)
 
 
+wact$time <- paste0('wild\n', wact$time)
+fact$time <- paste0('farmed\n', fact$time)
+hacc2aact$time <- paste0('hatchery\nacclimated\n', hacc2aact$time)
+nacc2aact$time <- paste0('non-\nacclimated\n(2a)\n', nacc2aact$time)
+hacc2bact$time <- paste0('hatchery\n& pen\nacclimated\n', hacc2bact$time)
+nacc2bact$time <- paste0('non-\nacclimated\n(2b)\n', nacc2bact$time)
+
+boxdata <- rbind(wact[,c(2, 3)], fact[,c(2, 3)], hacc2aact[,c(2, 3)], nacc2aact[,c(2, 3)], hacc2bact[,c(2, 3)], nacc2bact[,c(2, 3)])
+boxdata$time <- str_sub(boxdata$time, 1, str_length(boxdata$time)-5)
+boxdata$time <- as.factor(boxdata$time)
+boxdata$time <- factor(boxdata$time, levels(boxdata$time)[c(11, 12, 1, 2, 5, 6, 7, 8, 3, 4, 9, 10)])
+boxdata$TOD <- ifelse(str_detect(boxdata$time, 'day') == T, 'day', 'night')
+
+boxact <- ggplot(boxdata, aes(x = time, y = mean)) + 
+  theme_classic() + 
+  theme(text = element_text(family = plotfont, size = fs), plot.margin = margin(20, 30, -10, 30, 'pt'), 
+        axis.text.x = element_text(angle = 0, hjust = 0.5), legend.position = 'none') + 
+  geom_boxplot(outlier.shape = NA, aes(fill = TOD), width = 0.4) +
+  scale_y_continuous(name = 'activity (BL/s)', expand = c(0,0), limits = c(0, 1), breaks = seq(0, 1, 0.1)) +
+  scale_x_discrete(name = '', position = 'bottom') +
+  scale_fill_manual(values = c('gray90', 'gray35'))
+
+plot_grid(plot_grid(wfdp, ffdp, h2afdp, n2afdp, h2bfdp, n2bfdp, 
+                    labels = c('(a) wild', '(b) farmed', '(c) hatchery acclimated', '(d) non-acclimated', '(e) hatchery & pen acclimated', '(f) non-acclimated'),  
+                    rel_widths = c(1,1), hjust = c(-1.4, -1, -0.48, -0.55, -0.35, -0.52), 
+                    vjust = c(rep(21, 7)), nrow = 3, ncol = 2, label_size = fs), boxact, labels = c('', '(g)'), 
+          nrow = 2, ncol = 1, rel_heights = c(0.75, 0.25), label_size = fs, vjust = 3, hjust = -6)
+
+
+
 
 # 17. Night and day Locations for wild vs. farmed and acclimated vs. non-acclimated B--------------------------
 
@@ -1969,6 +2032,7 @@ wflocs$P7_totedge <- wflocs$P7_outer + wflocs$P7_edge
 wflocs$P8_totedge <- wflocs$P8_outer + wflocs$P8_edge
 wflocs$P7_hidecor_nohid <- wflocs$P7_hidecorner - wflocs$P7_hides - wflocs$P7_feedblock
 wflocs$P8_hidecor_nohid <- wflocs$P8_hidecorner - wflocs$P8_hides - wflocs$P8_feedblock
+
 #wflocs <- wflocs[c(1, 9, 8, 7, 21, 6, 19, 10, 18, 17, 16, 22, 15, 20)]
 wflocs <- wflocs[c(1, 7, 5, 6, 19,  10, 16, 14, 15, 20)]
 wflocs[wflocs <0] <- 0
@@ -2022,11 +2086,12 @@ wflocs$P7_totedge <- wflocs$P7_outer + wflocs$P7_edge
 wflocs$P8_totedge <- wflocs$P8_outer + wflocs$P8_edge
 wflocs$P7_hidecor_nohid <- wflocs$P7_hidecorner - wflocs$P7_hides - wflocs$P7_feedblock
 wflocs$P8_hidecor_nohid <- wflocs$P8_hidecorner - wflocs$P8_hides - wflocs$P8_feedblock
+
 #wflocs <- wflocs[c(1, 9, 8, 7, 21, 6, 19, 10, 18, 17, 16, 22, 15, 20)]
 wflocs <- wflocs[c(1, 7, 5, 6, 19,  10, 16, 14, 15, 20)]
 wflocs[wflocs <0] <- 0
 wflocs$P7_tot <- wflocs[,1] + wflocs[,2] + wflocs[,3] + wflocs[,4] + wflocs[,5]
-wflocs$P8_tot <- wflocs[,6] + wflocs[,7] + wflocs[,8] + wflocs[,9] + wflocs[,10] 
+wflocs$P8_tot <- wflocs[,6] + wflocs[,7] + wflocs[,8] + wflocs[,9] + wflocs[,10]
 wflocs$P7_lt15m <- (wflocs$P7_lt15m / wflocs$P7_tot)*100
 wflocs$P7_totedge <- (wflocs$P7_totedge / wflocs$P7_tot)*100
 wflocs$P7_emptycorner <- (wflocs$P7_emptycorner / wflocs$P7_tot)*100
@@ -2043,16 +2108,18 @@ wflocs$P8_centre <- (wflocs$P8_centre / wflocs$P8_tot)*100
 wflocs$P8_hidecorner <- (wflocs$P8_hidecorner / wflocs$P8_tot)*100
 wnlocs <- wflocs[c(1:5)]
 fnlocs <- wflocs[c(6:10)]
+
 wnlocs <- melt(wnlocs, variable.name = 'locs', value.name = 'props')
 wnlocs$day <- c(seq(2, 14), seq(20, 26), seq(30, 43))
 wnlocs$locs <- substring(wnlocs$locs, 4)
 wnlocs$locs <- as.factor(wnlocs$locs)
 wnlocs$locs <- factor(wnlocs$locs, levels(wnlocs$locs)[c(4, 1, 3, 2, 5)]) 
+
 fnlocs <- melt(fnlocs, variable.name = 'locs', value.name = 'props')
 fnlocs$day <- c(seq(2, 14), seq(20, 26), seq(30, 43))
 fnlocs$locs <- substring(fnlocs$locs, 4)
 fnlocs$locs <- as.factor(fnlocs$locs)
-fnlocs$locs <- factor(fnlocs$locs, levels(fnlocs$locs)[c(4, 1, 3, 2, 5)]) 
+fnlocs$locs <- factor(fnlocs$locs, levels(fnlocs$locs)[c(4, 1, 3, 2, 5)])
 
 rm(wflocs)
 
@@ -2075,38 +2142,41 @@ aclocs$P7_totedge <- aclocs$P7_outer + aclocs$P7_edge
 aclocs$P8_totedge <- aclocs$P8_outer + aclocs$P8_edge
 aclocs$P7_hidecor_nohid <- aclocs$P7_hidecorner - aclocs$P7_hides - aclocs$P7_feedblock
 aclocs$P8_hidecor_nohid <- aclocs$P8_hidecorner - aclocs$P8_hides - aclocs$P8_feedblock
-#wflocs <- wflocs[c(1, 19, seq(6, 9), 21, 10, 20, seq(15, 18), 22)]
-aclocs <- aclocs[c(1, 9, 8, 7, 21, 6, 19, 10, 18, 17, 16, 22, 15, 20)]
+
+#aclocs <- aclocs[c(1, 9, 8, 7, 21, 6, 19, 10, 18, 17, 16, 22, 15, 20)]
+aclocs <- aclocs[c(1, 7, 5, 6, 19,  10, 16, 14, 15, 20)]
 aclocs[aclocs <0] <- 0
-aclocs$P7_tot <- aclocs[,1] + aclocs[,2] + aclocs[,3] + aclocs[,4] + aclocs[,5] + aclocs[,6] + aclocs[,7]
-aclocs$P8_tot <- aclocs[,8] + aclocs[,9] + aclocs[,10] + aclocs[,11] + aclocs[,12] + aclocs[,13] + aclocs[,14]
+aclocs$P7_tot <- aclocs[,1] + aclocs[,2] + aclocs[,3] + aclocs[,4] + aclocs[,5]
+aclocs$P8_tot <- aclocs[,6] + aclocs[,7] + aclocs[,8] + aclocs[,9] + aclocs[,10]
 aclocs$P7_lt15m <- (aclocs$P7_lt15m / aclocs$P7_tot)*100
 aclocs$P7_totedge <- (aclocs$P7_totedge / aclocs$P7_tot)*100
 aclocs$P7_emptycorner <- (aclocs$P7_emptycorner / aclocs$P7_tot)*100
 aclocs$P7_centre <- (aclocs$P7_centre / aclocs$P7_tot)*100
-aclocs$P7_hides <- (aclocs$P7_hides / aclocs$P7_tot)*100
-aclocs$P7_feedblock <- (aclocs$P7_feedblock / aclocs$P7_tot)*100
-aclocs$P7_hidecor_nohid <- (aclocs$P7_hidecor_nohid / aclocs$P7_tot)*100
+#aclocs$P7_hides <- (aclocs$P7_hides / aclocs$P7_tot)*100
+#aclocs$P7_feedblock <- (aclocs$P7_feedblock / aclocs$P7_tot)*100
+aclocs$P7_hidecorner <- (aclocs$P7_hidecorner / aclocs$P7_tot)*100
 aclocs$P8_lt15m <- (aclocs$P8_lt15m / aclocs$P8_tot)*100
 aclocs$P8_totedge <- (aclocs$P8_totedge / aclocs$P8_tot)*100
 aclocs$P8_emptycorner <- (aclocs$P8_emptycorner / aclocs$P8_tot)*100
 aclocs$P8_centre <- (aclocs$P8_centre / aclocs$P8_tot)*100
-aclocs$P8_hides <- (aclocs$P8_hides / aclocs$P8_tot)*100
-aclocs$P8_feedblock <- (aclocs$P8_feedblock / aclocs$P8_tot)*100
-aclocs$P8_hidecor_nohid <- (aclocs$P8_hidecor_nohid / aclocs$P8_tot)*100
-nadlocs <- aclocs[c(8:14)]
-acdlocs <- aclocs[c(1:7)]
+#aclocs$P8_hides <- (aclocs$P8_hides / aclocs$P8_tot)*100
+#aclocs$P8_feedblock <- (aclocs$P8_feedblock / aclocs$P8_tot)*100
+aclocs$P8_hidecorner <- (aclocs$P8_hidecorner / aclocs$P8_tot)*100
+acdlocs <- aclocs[c(1:5)]
+nadlocs <- aclocs[c(6:10)]
+
 acdlocs <- melt(acdlocs, variable.name = 'locs', value.name = 'props')
-acdlocs$day <- c(seq(1, 30))
+acdlocs$day <- seq(1, 30)
 acdlocs$locs <- substring(acdlocs$locs, 4)
 acdlocs$locs <- as.factor(acdlocs$locs)
-acdlocs$locs <- factor(acdlocs$locs, levels(acdlocs$locs)[c(6, 3, 5, 1, 4, 2, 7)]) 
+acdlocs$locs <- factor(acdlocs$locs, levels(acdlocs$locs)[c(4, 1, 3, 2, 5)]) 
 
 nadlocs <- melt(nadlocs, variable.name = 'locs', value.name = 'props')
-nadlocs$day <- c(seq(1, 30))
+nadlocs$day <- seq(1, 30)
 nadlocs$locs <- substring(nadlocs$locs, 4)
 nadlocs$locs <- as.factor(nadlocs$locs)
-nadlocs$locs <- factor(nadlocs$locs, levels(nadlocs$locs)[c(6, 3, 5, 1, 4, 2, 7)]) 
+nadlocs$locs <- factor(nadlocs$locs, levels(nadlocs$locs)[c(4, 1, 3, 2, 5)])
+
 
 # load acclimated vs. non-acclimated night locations data, reorganise and recalculate as proportions
 
@@ -2127,38 +2197,40 @@ aclocs$P7_totedge <- aclocs$P7_outer + aclocs$P7_edge
 aclocs$P8_totedge <- aclocs$P8_outer + aclocs$P8_edge
 aclocs$P7_hidecor_nohid <- aclocs$P7_hidecorner - aclocs$P7_hides - aclocs$P7_feedblock
 aclocs$P8_hidecor_nohid <- aclocs$P8_hidecorner - aclocs$P8_hides - aclocs$P8_feedblock
-#wflocs <- wflocs[c(1, 19, seq(6, 9), 21, 10, 20, seq(15, 18), 22)]
-aclocs <- aclocs[c(1, 9, 8, 7, 21, 6, 19, 10, 18, 17, 16, 22, 15, 20)]
+
+#aclocs <- aclocs[c(1, 9, 8, 7, 21, 6, 19, 10, 18, 17, 16, 22, 15, 20)]
+aclocs <- aclocs[c(1, 7, 5, 6, 19,  10, 16, 14, 15, 20)]
 aclocs[aclocs <0] <- 0
-aclocs$P7_tot <- aclocs[,1] + aclocs[,2] + aclocs[,3] + aclocs[,4] + aclocs[,5] + aclocs[,6] + aclocs[,7]
-aclocs$P8_tot <- aclocs[,8] + aclocs[,9] + aclocs[,10] + aclocs[,11] + aclocs[,12] + aclocs[,13] + aclocs[,14]
+aclocs$P7_tot <- aclocs[,1] + aclocs[,2] + aclocs[,3] + aclocs[,4] + aclocs[,5]
+aclocs$P8_tot <- aclocs[,6] + aclocs[,7] + aclocs[,8] + aclocs[,9] + aclocs[,10]
 aclocs$P7_lt15m <- (aclocs$P7_lt15m / aclocs$P7_tot)*100
 aclocs$P7_totedge <- (aclocs$P7_totedge / aclocs$P7_tot)*100
 aclocs$P7_emptycorner <- (aclocs$P7_emptycorner / aclocs$P7_tot)*100
 aclocs$P7_centre <- (aclocs$P7_centre / aclocs$P7_tot)*100
-aclocs$P7_hides <- (aclocs$P7_hides / aclocs$P7_tot)*100
-aclocs$P7_feedblock <- (aclocs$P7_feedblock / aclocs$P7_tot)*100
-aclocs$P7_hidecor_nohid <- (aclocs$P7_hidecor_nohid / aclocs$P7_tot)*100
+#aclocs$P7_hides <- (aclocs$P7_hides / aclocs$P7_tot)*100
+#aclocs$P7_feedblock <- (aclocs$P7_feedblock / aclocs$P7_tot)*100
+aclocs$P7_hidecorner <- (aclocs$P7_hidecorner / aclocs$P7_tot)*100
 aclocs$P8_lt15m <- (aclocs$P8_lt15m / aclocs$P8_tot)*100
 aclocs$P8_totedge <- (aclocs$P8_totedge / aclocs$P8_tot)*100
 aclocs$P8_emptycorner <- (aclocs$P8_emptycorner / aclocs$P8_tot)*100
 aclocs$P8_centre <- (aclocs$P8_centre / aclocs$P8_tot)*100
-aclocs$P8_hides <- (aclocs$P8_hides / aclocs$P8_tot)*100
-aclocs$P8_feedblock <- (aclocs$P8_feedblock / aclocs$P8_tot)*100
-aclocs$P8_hidecor_nohid <- (aclocs$P8_hidecor_nohid / aclocs$P8_tot)*100
-nanlocs <- aclocs[c(8:14)]
-acnlocs <- aclocs[c(1:7)]
+#aclocs$P8_hides <- (aclocs$P8_hides / aclocs$P8_tot)*100
+#aclocs$P8_feedblock <- (aclocs$P8_feedblock / aclocs$P8_tot)*100
+aclocs$P8_hidecorner <- (aclocs$P8_hidecorner / aclocs$P8_tot)*100
+acnlocs <- aclocs[c(1:5)]
+nanlocs <- aclocs[c(6:10)]
+
 acnlocs <- melt(acnlocs, variable.name = 'locs', value.name = 'props')
-acnlocs$day <- c(seq(2, 30))
+acnlocs$day <- seq(2, 30)
 acnlocs$locs <- substring(acnlocs$locs, 4)
 acnlocs$locs <- as.factor(acnlocs$locs)
-acnlocs$locs <- factor(acnlocs$locs, levels(acnlocs$locs)[c(6, 3, 5, 1, 4, 2, 7)]) 
+acnlocs$locs <- factor(acnlocs$locs, levels(acnlocs$locs)[c(4, 1, 3, 2, 5)]) 
 
 nanlocs <- melt(nanlocs, variable.name = 'locs', value.name = 'props')
-nanlocs$day <- c(seq(2, 30))
+nanlocs$day <- seq(2, 30)
 nanlocs$locs <- substring(nanlocs$locs, 4)
 nanlocs$locs <- as.factor(nanlocs$locs)
-nanlocs$locs <- factor(nanlocs$locs, levels(nanlocs$locs)[c(6, 3, 5, 1, 4, 2, 7)]) 
+nanlocs$locs <- factor(nanlocs$locs, levels(nanlocs$locs)[c(4, 1, 3, 2, 5)])
 
 rm(aclocs)
 
@@ -2174,6 +2246,7 @@ npal <- diverge_hcl(7, h = c(259, 171), c = 49, l = c(34, 85), power = 1.3)
 npal <- npal[c(4, 6, 5, 7, 3, 2, 1)]
 dpal <- diverge_hcl(7, h = c(69, 360), c = 49, l = c(51, 87), power = 1.3)
 dpal <- dpal[c(4, 6, 5, 7, 3, 2, 1)]
+bwpal <- c('gray95', 'gray10', 'gray80', 'gray56', 'gray35')
 
 
 locplot <- function(df, leg, pcols){
@@ -2181,10 +2254,10 @@ locplot <- function(df, leg, pcols){
   lplot <- ggplot(df, aes(x = day, y = props, fill = locs)) +
     theme_classic() + theme(text = element_text(family = plotfont, size = fs), legend.position = 'none', plot.margin = margin(10, 5, 10, 1, 'pt')) +
     geom_bar(stat = 'identity') +
-    scale_fill_manual(guide = guide_legend(title = NULL,  nrow = 4, keywidth = 0.75, keyheight = 0.75, label.theme = element_text(size = fs-1, angle = 0, family = plotfont)), 
+    scale_fill_manual(guide = guide_legend(title = NULL,  nrow = 1, keywidth = 0.75, keyheight = 0.75, label.theme = element_text(size = fs, angle = 0, family = plotfont)), 
                       labels = c('below 15m', 'centre', 'hide corners', 'empty corners', 'edge'), 
-                      values = c('lt15m' = pcols[[1]], 'centre' = pcols[[4]], 
-                                 'hidecorner' = pcols[[5]], 'emptycorner' = pcols[[6]], 'totedge' = pcols[[7]])) +
+                      values = c('lt15m' = pcols[[1]], 'centre' = pcols[[2]], 
+                                 'hidecorner' = pcols[[3]], 'emptycorner' = pcols[[4]], 'totedge' = pcols[[5]])) +
     scale_y_continuous(name = 'Time (%)', expand = c(0,0), breaks = seq(0, 100, 10)) + 
     scale_x_discrete(name = 'Exp. day', expand = c(0,0), limits = seq(0, 43, 1), 
                      labels = c('5', '10', '15', '20', '25', '30', '35', '40'), breaks = seq(5, 40, 5)) +
@@ -2200,37 +2273,45 @@ locplot <- function(df, leg, pcols){
 }
 
 
-locplot(wdlocs, F, dpal)
+locplot(wdlocs, F, bwpal)
 wdlp <- lplot
 
-locplot(wnlocs, F, npal)
-wnlp <- lplot
-
-locplot(fdlocs, T, dpal)
+locplot(fdlocs, T, bwpal)
 fdlp <- lplot
 
-locplot(fnlocs, T, npal)
-fnlp <- lplot
-
-locplot(acdlocs, F, dpal)
+locplot(acdlocs, F, bwpal)
 acdlp <- lplot
 
-locplot(acnlocs, F, npal)
-acnlp <- lplot
-
-locplot(nadlocs, F, dpal)
+locplot(nadlocs, F, bwpal)
 nadlp <- lplot
 
-locplot(nanlocs, F, npal)
+locplot(wnlocs, F, bwpal)
+wnlp <- lplot
+
+locplot(fnlocs, F, bwpal)
+fnlp <- lplot
+
+locplot(acnlocs, F, bwpal)
+acnlp <- lplot
+
+locplot(nanlocs, F, bwpal)
 nanlp <- lplot
 
-
-plot_grid(fdlp, fnlp, wdlp, wnlp, nadlp, nanlp, acdlp, acnlp, labels = c('(a)', '(b)', '(c)', '(d)', '(e)', '(f)', '(g)', '(h)'),  rel_widths = c(1,1), hjust = c(rep(-4, 5), -5, rep(-4, 2)), vjust = c(rep(2.5, 8)), nrow = 4, ncol = 2, label_size = fs)
-
-
-#plot_grid(wplot, acplot, fplot, naplot, labels = c('(a)', '(c)', '(b)', '(d)'), rel_widths = c(1,1), hjust = c(-0.0, -0.5, -0.0, -0.5))
+locleg <- get_legend(fdlp)
+fdlp <- fdlp + theme(legend.position = 'none')
 
 
+#plot_grid(fdlp, fnlp, wdlp, wnlp, nadlp, nanlp, acdlp, acnlp, labels = c('(a)', '(b)', '(c)', '(d)', '(e)', '(f)', '(g)', '(h)'),  rel_widths = c(1,1), hjust = c(rep(-4, 5), -5, rep(-4, 2)), vjust = c(rep(2.5, 8)), nrow = 4, ncol = 2, label_size = fs)
+
+plot_grid(plot_grid(wdlp, fdlp, acdlp, nadlp, 
+          labels = c('(a) wild', '(b) farmed', '(c) hatchery & pen acclimated', '(d) non-acclimated'),  
+          rel_widths = c(1,1), hjust = c(-1.6, -1.1, -0.4, -0.6), vjust = c(rep(2.5, 4)), nrow = 2, ncol = 2, label_size = fs),
+           locleg, nrow = 2, ncol = 1, rel_heights = c(1.9, 0.1))
+
+plot_grid(plot_grid(wnlp, fnlp, acnlp, nanlp, 
+                    labels = c('(a) wild', '(b) farmed', '(c) hatchery & pen acclimated', '(d) non-acclimated'),  
+                    rel_widths = c(1,1), hjust = c(-1.6, -1.1, -0.4, -0.6), vjust = c(rep(2.5, 4)), nrow = 2, ncol = 2, label_size = fs),
+                    locleg, nrow = 2, ncol = 1, rel_heights = c(1.9, 0.1))
 
 
 # 18. Night and day Locations of individual fish for wild vs. farmed and acclimated vs. non-acclimated B----------------------
@@ -2559,4 +2640,288 @@ nanflp <- lfplot
 fig7 <- plot_grid(fdflp, fnflp, wdflp, wnflp, nadflp, nanflp, hadflp, hanflp, labels = c('(a)', '(b)', '(c)', '(d)', '(e)', '(f)', '(g)', '(h)'),  rel_widths = c(1,1), hjust = c(rep(-4, 5), -5, rep(-4, 2)), vjust = c(rep(2.5, 8)), nrow = 4, ncol = 2, label_size = fs)
 
 saveRDS(fig7, 'G:/Publications/Wild vs. Farmed/R/fig7.rds')
+
+
+
+# 19. Examples of KUD plots for wild, farmed, non-acclimated and hatchery and pen acclimated-----------------------
+
+workingdir <- ifelse(Sys.info()['user'] == 'Laptop', 'H:/Acoustic tag - Wild vs. Farmed/Data processing/Cropped data/Coded Day CSV', '/Volumes/My Book/Acoustic datasets/Wild vs Farmed') # change to location of data
+setwd(workingdir)
+files <- list.files(path = workingdir, pattern = '*.csv', all.files = FALSE, recursive = FALSE)
+wildvsfarmed <- data.frame()
+
+for(i in 1:length(files)){
+  daytemp <- fread(files[[i]])
+  #daytemp <- read.csv(files[[i]], header = TRUE, sep = ",", colClasses = dayfile.classes)
+  wildvsfarmed <- rbind(wildvsfarmed, daytemp)
+}
+
+wildvsfarmed$EchoTime <- as.POSIXct(wildvsfarmed$EchoTime)
+wildvsfarmed$V1 <- NULL
+wildvsfarmed <- wildvsfarmed[,c(1, 4, 5, 6)] %>%
+  filter(Period != 8711) %>%
+  filter(Period != 8347)
+
+
+wf6499 <- filter(wildvsfarmed, Period == 6499) %>% dplyr::select(-EchoTime)
+ff7311 <- filter(wildvsfarmed, Period == 7311) %>% dplyr::select(-EchoTime)
+
+wf.locations.lookup <- xlsx::read.xlsx('H:/Acoustic tag - Wild vs. Farmed/AcousticTagFile_2015.xlsx', sheetName = 'Locations coding (old)', startRow = 1, endRow = 47, colIndex = seq(1, 7)) # read in codes from Locations Coding spreadsheet
+rownames(wf.locations.lookup) <- wf.locations.lookup$Code
+
+# Load acclimated vs. non-acclimated data
+
+#workingdir <- 'H:/Data processing/2016 Conditioning study B/Filtered Data/Recoded Day CSV'
+workingdir <- ifelse(Sys.info()['user'] == 'Laptop', 'H:/Acoustic tag - Preconditioning B/Data processing/Filtered Data/Recoded Day CSV', '/Volumes/My Book/Acoustic datasets/Precon B') # change to location of data
+setwd(workingdir)
+files <- list.files(path = workingdir, pattern = '*.csv', all.files = FALSE, recursive = FALSE)
+preconb <- data.frame()
+
+for(i in 1:length(files)){
+  #daytemp <- read.csv(files[[i]], header = TRUE, sep = ",", colClasses = dayfile.classes)
+  daytemp <- fread(files[[i]])
+  preconb <- rbind(preconb, daytemp)
+}
+
+preconb$EchoTime <- as.POSIXct(preconb$EchoTime)
+preconb$V1 <- NULL
+
+preconb <- preconb[,c(1, 4, 5, 6)]
+ac9873 <-   filter(preconb, Period == 9873) %>% dplyr::select(-EchoTime)
+na7409 <-   filter(preconb, Period == 7409) %>% dplyr::select(-EchoTime)
+
+ac.locations.lookup <- xlsx::read.xlsx('H:/Acoustic tag - Preconditioning B/AcousticTagFile_2016.xlsx', sheetIndex = 12, startRow = 1, endRow = 47, colIndex = seq(1, 7)) # read in codes from Locations Coding spreadsheet
+rownames(ac.locations.lookup) <- ac.locations.lookup$Code
+
+
+# Calculate KUDs for wild and farmed fish examples
+
+#kudcols <- terrain.colors(4, alpha = 0.6)
+kudcols <- c('gray55', 'gray70')
+pen.col <- 'black'
+pen.size <- 2
+
+x <- seq(25, 70, by = 0.5)
+y <- seq(0, 50, by = 0.5)
+xy <- expand.grid(x=x, y=y)
+coordinates(xy) <- ~x+y
+gridded(xy) <- TRUE
+class(xy)  
+
+#coords <- dayfile[,c(1, 5, 6)] # extract x,y coords and fish id from dayfile
+coordinates(wf6499) <- c('PosX', 'PosY') # convert to spatial points data frame object
+ud <- kernelUD(wf6499, h = 'href', grid = xy, kern = 'bivnorm') # KUD calculation for adehabitatHR package
+
+#mcp100 <- mcp(coords, percent = 100)
+ver50w <- getverticeshr(ud, 50) # extract 50% vertex for plotting
+ver95w <- getverticeshr(ud, 95) # extract 95% vertex for plotting
+#ka <- kernel.area(ud, percent = c(50, 95), unin = 'm', unout = 'm2') # calculates area of KUD50, KUD95
+
+#draw wild fish plot and save to object using pryr package 
+wkudplot %<a-% {
+  plot(ver95w, col = kudcols[[1]], axes = T, xlim = c(30, 63), ylim = c(10, 40), xlab = 'x (m)', ylab = 'y (m)') # plot KUD95
+  plot(ver50w, col = kudcols[[2]], axes = F, xlim = c(30, 63), ylim = c(10, 40), add=T) # plot KUD50
+  rect(wf.locations.lookup['8WHSW', 'xmin'], wf.locations.lookup['8WHSW', 'ymin'], wf.locations.lookup['8WHSW', 'xmax'], wf.locations.lookup['8WHSW', 'ymax'], lty = 3, lwd = 2)#, col = rgb(1, 0.6, 0, 0.4)) # 7WHSE
+  rect(wf.locations.lookup['8WHNE', 'xmin'], wf.locations.lookup['8WHNE', 'ymin'], wf.locations.lookup['8WHNE', 'xmax'], wf.locations.lookup['8WHNE', 'ymax'], lty = 3, lwd = 2)#, col = rgb(1, 0.6, 0, 0.4)) # 7WHNW
+  #rect(wf.locations.lookup['8FBNE', 'xmin'], wf.locations.lookup['8FBNE', 'ymin'], wf.locations.lookup['8FBNE', 'xmax'], wf.locations.lookup['8FBNE', 'ymax'], lty = 3, col = rgb(1, 1, 0.1, 0.4)) # 7FBNE
+  #rect(wf.locations.lookup['8FBSW', 'xmin'], wf.locations.lookup['8FBSW', 'ymin'], wf.locations.lookup['8FBSW', 'xmax'], wf.locations.lookup['8FBSW', 'ymax'], lty = 3, col = rgb(1, 1, 0.1, 0.4)) # 7FBSW
+  rect(wf.locations.lookup['8EW', 'xmin'], wf.locations.lookup['8ES', 'ymin'], wf.locations.lookup['8EE', 'xmax'], wf.locations.lookup['8EN', 'ymax'], lwd = 2) # cage limits
+  #text(31, 39, labels = bquote(paste(KUD[50], ' = ', .(ka[1,1]), m^2)), adj = c(0,0))
+  #text(31, 37.5, labels = bquote(paste(KUD[95], ' = ', .(ka[2,1]), m^2)), adj = c(0,0))
+  text(63, 38, labels = '(a)')
+}
+
+
+#coords <- dayfile[,c(1, 5, 6)] # extract x,y coords and fish id from dayfile
+coordinates(ff7311) <- c('PosX', 'PosY') # convert to spatial points data frame object
+ud <- kernelUD(ff7311, h = 'href', grid = xy, kern = 'bivnorm') # KUD calculation for adehabitatHR package
+
+#mcp100 <- mcp(coords, percent = 100)
+ver50f <- getverticeshr(ud, 50) # extract 50% vertex for plotting
+ver95f <- getverticeshr(ud, 95) # extract 95% vertex for plotting
+#ka <- kernel.area(ud, percent = c(50, 95), unin = 'm', unout = 'm2') # calculates area of KUD50, KUD95
+
+# draw farmed fish plot and save to object
+fkudplot %<a-% {
+  plot(ver95f, col = kudcols[[1]], axes = T, xlim = c(30, 63), ylim = c(10, 40), xlab = 'x (m)', ylab = 'y (m)') # plot KUD95
+  plot(ver50f, col = kudcols[[2]], axes = F, xlim = c(30, 63), ylim = c(10, 40), add=T) # plot KUD50
+  rect(wf.locations.lookup['8WHSW', 'xmin'], wf.locations.lookup['8WHSW', 'ymin'], wf.locations.lookup['8WHSW', 'xmax'], wf.locations.lookup['8WHSW', 'ymax'], lty = 3, lwd = 2)#, col = rgb(1, 0.6, 0, 0.4)) # 7WHSE
+  rect(wf.locations.lookup['8WHNE', 'xmin'], wf.locations.lookup['8WHNE', 'ymin'], wf.locations.lookup['8WHNE', 'xmax'], wf.locations.lookup['8WHNE', 'ymax'], lty = 3, lwd = 2)#, col = rgb(1, 0.6, 0, 0.4)) # 7WHNW
+  #rect(wf.locations.lookup['8FBNE', 'xmin'], wf.locations.lookup['8FBNE', 'ymin'], wf.locations.lookup['8FBNE', 'xmax'], wf.locations.lookup['8FBNE', 'ymax'], lty = 3, col = rgb(1, 1, 0.1, 0.4)) # 7FBNE
+  #rect(wf.locations.lookup['8FBSW', 'xmin'], wf.locations.lookup['8FBSW', 'ymin'], wf.locations.lookup['8FBSW', 'xmax'], wf.locations.lookup['8FBSW', 'ymax'], lty = 3, col = rgb(1, 1, 0.1, 0.4)) # 7FBSW
+  rect(wf.locations.lookup['8EW', 'xmin'], wf.locations.lookup['8ES', 'ymin'], wf.locations.lookup['8EE', 'xmax'], wf.locations.lookup['8EN', 'ymax'], lwd = 2) # cage limits
+  #text(31, 39, labels = bquote(paste(KUD[50], ' = ', .(ka[1,1]), m^2)), adj = c(0,0))
+  #text(31, 37.5, labels = bquote(paste(KUD[95], ' = ', .(ka[2,1]), m^2)), adj = c(0,0))
+  text(63, 38, labels = '(b)')
+  
+}
+
+# Calculate KUDs for acclimated and non-acclimated fish examples
+
+#kudcols <- terrain.colors(4, alpha = 0.6)
+kudcols <- c('gray55', 'gray70')
+pen.col <- 'black'
+pen.size <- 2
+
+x <- seq(0, 50, by = 0.5)
+y <- seq(0, 50, by = 0.5)
+xy <- expand.grid(x=x, y=y)
+coordinates(xy) <- ~x+y
+gridded(xy) <- TRUE
+class(xy) 
+
+#coords <- dayfile[,c(1, 5, 6)] # extract x,y coords and fish id from dayfile
+coordinates(ac9873) <- c('PosX', 'PosY') # convert to spatial points data frame object
+ud <- kernelUD(ac9873, h = 'href', grid = xy, kern = 'bivnorm') # KUD calculation for adehabitatHR package
+
+#mcp100 <- mcp(coords, percent = 100)
+ver50ac <- getverticeshr(ud, 50) # extract 50% vertex for plotting
+ver95ac <- getverticeshr(ud, 95) # extract 95% vertex for plotting
+#ka <- kernel.area(ud, percent = c(50, 95), unin = 'm', unout = 'm2') # calculates area of KUD50, KUD95
+
+#draw acclimated fish plot and save to object using pryr package 
+ackudplot %<a-% {
+  plot(ver95ac, col = kudcols[[1]], axes = T, xlim = c(10, 45), ylim = c(10, 45), xlab = 'x (m)', ylab = 'y (m)') # plot KUD95
+  plot(ver50ac, col = kudcols[[2]], axes = F, xlim = c(10, 45), ylim = c(10, 45), add=T) # plot KUD50
+  rect(ac.locations.lookup['7WHSE', 'xmin'], ac.locations.lookup['7WHSE', 'ymin'], ac.locations.lookup['7WHSE', 'xmax'], ac.locations.lookup['7WHSE', 'ymax'], lty = 3, lwd = 2)#, col = rgb(1, 0.6, 0, 0.4)) # 7WHSE
+  rect(ac.locations.lookup['7WHNW', 'xmin'], ac.locations.lookup['7WHNW', 'ymin'], ac.locations.lookup['7WHNW', 'xmax'], ac.locations.lookup['7WHNW', 'ymax'], lty = 3, lwd = 2)#, col = rgb(1, 0.6, 0, 0.4)) # 7WHNW
+  #rect(ac.locations.lookup['8FBNE', 'xmin'], ac.locations.lookup['8FBNE', 'ymin'], ac.locations.lookup['8FBNE', 'xmax'], ac.locations.lookup['8FBNE', 'ymax'], lty = 3, col = rgb(1, 1, 0.1, 0.4)) # 7FBNE
+  #rect(ac.locations.lookup['8FBSW', 'xmin'], ac.locations.lookup['8FBSW', 'ymin'], ac.locations.lookup['8FBSW', 'xmax'], ac.locations.lookup['8FBSW', 'ymax'], lty = 3, col = rgb(1, 1, 0.1, 0.4)) # 7FBSW
+  rect(ac.locations.lookup['7EW', 'xmin'], ac.locations.lookup['7ES', 'ymin'], ac.locations.lookup['7EE', 'xmax'], ac.locations.lookup['7EN', 'ymax'], lwd = 2) # cage limits
+  #text(31, 39, labels = bquote(paste(KUD[50], ' = ', .(ka[1,1]), m^2)), adj = c(0,0))
+  #text(31, 37.5, labels = bquote(paste(KUD[95], ' = ', .(ka[2,1]), m^2)), adj = c(0,0))
+  text(43, 43, labels = '(c)')
+  
+}
+
+
+x <- seq(25, 70, by = 0.5)
+y <- seq(0, 50, by = 0.5)
+xy <- expand.grid(x=x, y=y)
+coordinates(xy) <- ~x+y
+gridded(xy) <- TRUE
+class(xy)  
+
+
+#coords <- dayfile[,c(1, 5, 6)] # extract x,y coords and fish id from dayfile
+coordinates(na7409) <- c('PosX', 'PosY') # convert to spatial points data frame object
+ud <- kernelUD(na7409, h = 'href', grid = xy, kern = 'bivnorm') # KUD calculation for adehabitatHR package
+
+#mcp100 <- mcp(coords, percent = 100)
+ver50na <- getverticeshr(ud, 50) # extract 50% vertex for plotting
+ver95na <- getverticeshr(ud, 95) # extract 95% vertex for plotting
+#ka <- kernel.area(ud, percent = c(50, 95), unin = 'm', unout = 'm2') # calculates area of KUD50, KUD95
+
+# draw non-acclimated fish plot and save to object
+nakudplot %<a-% {
+  plot(ver95na, col = kudcols[[1]], axes = T, xlim = c(35, 70), ylim = c(10, 40), xlab = 'x (m)', ylab = 'y (m)') # plot KUD95
+  plot(ver50na, col = kudcols[[2]], axes = F, xlim = c(35, 70), ylim = c(10, 40), add=T) # plot KUD50
+  rect(ac.locations.lookup['8WHSW', 'xmin'], ac.locations.lookup['8WHSW', 'ymin'], ac.locations.lookup['8WHSW', 'xmax'], ac.locations.lookup['8WHSW', 'ymax'], lty = 3, lwd = 2)#, col = rgb(1, 0.6, 0, 0.4)) # 7WHSE
+  rect(ac.locations.lookup['8WHNE', 'xmin'], ac.locations.lookup['8WHNE', 'ymin'], ac.locations.lookup['8WHNE', 'xmax'], ac.locations.lookup['8WHNE', 'ymax'], lty = 3, lwd = 2)#, col = rgb(1, 0.6, 0, 0.4)) # 7WHNW
+  #rect(ac.locations.lookup['8FBNE', 'xmin'], ac.locations.lookup['8FBNE', 'ymin'], ac.locations.lookup['8FBNE', 'xmax'], ac.locations.lookup['8FBNE', 'ymax'], lty = 3, col = rgb(1, 1, 0.1, 0.4)) # 7FBNE
+  #rect(ac.locations.lookup['8FBSW', 'xmin'], ac.locations.lookup['8FBSW', 'ymin'], ac.locations.lookup['8FBSW', 'xmax'], ac.locations.lookup['8FBSW', 'ymax'], lty = 3, col = rgb(1, 1, 0.1, 0.4)) # 7FBSW
+  rect(ac.locations.lookup['8EW', 'xmin'], ac.locations.lookup['8ES', 'ymin'], ac.locations.lookup['8EE', 'xmax'], ac.locations.lookup['8EN', 'ymax'], lwd = 2) # cage limits
+  #text(31, 39, labels = bquote(paste(KUD[50], ' = ', .(ka[1,1]), m^2)), adj = c(0,0))
+  #text(31, 37.5, labels = bquote(paste(KUD[95], ' = ', .(ka[2,1]), m^2)), adj = c(0,0))
+  text(69, 38, labels = '(d)')
+  
+}
+
+
+
+kudfig %<a-% {
+  
+  split.screen(c(2, 2))
+  
+  screen(1)
+  wkudplot
+  
+  screen(2)
+  fkudplot
+  
+  screen(3)
+  ackudplot
+  
+  screen(4)
+  nakudplot
+  
+}
+
+close.screen(all = T)
+
+
+# 20. Cumulative KUDS for wild vs farmed and trial 2b.
+
+# load wild and farmed cumulative kud data
+
+ckud95w <- read.csv('H:/Acoustic tag - Wild vs. Farmed/Data processing/Cropped data/Coded Day CSV/Outputs/cumulativeKUD95_wild.csv')
+ckud95w$DOY <- NULL
+asymw <- rowMeans(ckud95w[38,2:15]) # calculate aysymptote for wild fish
+ckud95w <- slice(ckud95w, 1:37)
+ckud95w <- melt(ckud95w, id.vars = 'ExpDay', variable.name = 'FishID', value.name = 'KUD')
+
+ckud95f <- read.csv('H:/Acoustic tag - Wild vs. Farmed/Data processing/Cropped data/Coded Day CSV/Outputs/cumulativeKUD95_farmed.csv')
+ckud95f$DOY <- NULL
+asymf <- rowMeans(ckud95f[38,2:11]) # calculate aysymptote for farmed fish
+ckud95f <- slice(ckud95f, 1:37)
+ckud95f <- melt(ckud95f, id.vars = 'ExpDay', variable.name = 'FishID', value.name = 'KUD')
+
+# load trial 2b cumulative kud data
+
+ckud95ac <- read.csv('H:/Acoustic tag - Preconditioning B/Data processing/Filtered Data/Recoded Day CSV/Outputs/cumulativeKUD95-acclimated.csv')
+ckud95ac$DOY <- NULL
+asymac <- rowMeans(ckud95ac[30,2:11]) # calculate aysymptote for wild fish
+ckud95ac <- slice(ckud95ac, 1:29)
+ckud95ac <- melt(ckud95ac, id.vars = 'ExpDay', variable.name = 'FishID', value.name = 'KUD')
+
+ckud95na <- read.csv('H:/Acoustic tag - Preconditioning B/Data processing/Filtered Data/Recoded Day CSV/Outputs/cumulativeKUD95-nonacclimated.csv')
+ckud95na$DOY <- NULL
+asymna <- rowMeans(ckud95na[30,2:15]) # calculate aysymptote for farmed fish
+ckud95na <- slice(ckud95na, 1:29)
+ckud95na <- melt(ckud95na, id.vars = 'ExpDay', variable.name = 'FishID', value.name = 'KUD')
+
+# draw cumulative kud plots
+
+plotfont <- 'Arial'
+fs <- 12
+
+
+ckudplot <- function(df, el, asym){
+  
+  kudplot <- ggplot(df, aes(x = ExpDay, y = KUD, group = FishID)) +
+    theme_classic() +
+    theme(text = element_text(family = plotfont, size = fs), plot.margin = margin(10, 5, 10, 1, 'pt'), legend.position = 'none') + 
+    geom_line(aes(colour = 'onecol'), stat = 'identity', size = 0.7) + 
+    scale_x_continuous(name = 'Exp. day', expand = c(0,0), breaks = seq(0, el, 5)) +
+    scale_y_continuous(limits = c(0, 850), breaks = seq(0, 800, 100)) +
+    ylab(expression(KUD[95]~(m^2))) +
+    scale_colour_manual(values = c('onecol' = 'black')) +
+    geom_vline(xintercept = asym, size = 1, linetype = 'dashed') +
+    theme(axis.title.x = element_text(size = fs-1), axis.title.y = element_text(size = fs-1)) 
+  
+  kudplot <<- kudplot
+  
+}
+
+ckudplot(ckud95w, 37, asymw)
+wkp <- kudplot
+
+ckudplot(ckud95f, 37, asymf)
+fkp <- kudplot
+
+ckudplot(ckud95ac, 30, asymac)
+ackp <- kudplot
+
+ckudplot(ckud95na, 37, asymna)
+nakp <- kudplot
+
+plot_grid(wkp, fkp, ackp, nakp, labels = c('wild (a)', 'farmed (b)', 'hatchery & pen acclimated (c)', 'non-acclimated (d)'), 
+          rel_widths = c(1,1), hjust = c(-7.5, -5, -1.05, -2.25), vjust = c(3, 3, 3, 3), nrow = 2, ncol = 2, label_size = fs)
+
+
+
+
+
+
+
 
