@@ -47,6 +47,7 @@ library(tidyverse)
 library(adehabitat)
 library(adehabitatHR)
 library(pryr)
+library(plyr)
 
 
 # Environmental probe plots------------------------------
@@ -1181,6 +1182,7 @@ dm
 
 
 
+
 # 13. Line plots of night and day depth for all three trials---------------------------------
 
 detach('package:xlsx')
@@ -1195,10 +1197,14 @@ library(cowplot)
 
 setwd('H:/Acoustic tag - Wild vs. Farmed/Data processing/Cropped data/Coded Day CSV/Outputs')
 #mdepth <- read.xlsx('DepthTotOutput.xlsx', sheet = 1, rows = seq(1, 17, 1), cols = seq(2, 32, 1), colNames = T, rowNames = T)
-mdepth <- read.csv('DepthTotOutput.csv')
+mdepth <- read.csv('DepthTotOutput-day.csv')
+aovw <- mdepth[9,4:40] # remove anovas
+aovf <- mdepth[18,4:40] # remove anovas
+mdepth <- as.data.frame(slice(mdepth, c(1:8, 10:17)))
 rownames(mdepth) <- mdepth$X
-mdepth[,c(1, 2, 40, 41, 42, 43, 44, 45)] <- NULL
-colnames(mdepth) <- c(seq(1, 14, 1), seq(19, 26, 1), seq(29, 43, 1))
+mdepth[,c(1, 2, 3, 40, 41, 42, 43, 44, 45)] <- NULL
+colnames(mdepth) <- c(seq(1, 14, 1), seq(19, 26, 1), seq(29, 42, 1))
+
 mdepth <- as.data.frame(t(mdepth))
 mdepth <- setDT(mdepth, keep.rownames = T)[]
 colnames(mdepth)[1] <- 'Day'
@@ -1231,9 +1237,10 @@ rm(mdep, sedep)
 
 setwd('H:/Acoustic tag - Preconditioning A/Data processing/Filtered Data/Recoded Day CSV/Outputs')
 #mdepth <- read.xlsx('DepthTotOutput.xlsx', sheet = 1, rows = seq(1, 17, 1), cols = seq(2, 32, 1), colNames = T, rowNames = T)
-mdepth <- read.csv('DepthTotOutput.csv')
+mdepth <- read.csv('DepthTotOutput-days.csv')
 rownames(mdepth) <- mdepth$X
-mdepth[,c(1, 2)] <- NULL
+mdepth <- mdepth[c(1:8, 10:17),]
+mdepth[,c(1, 2, 3, 4)] <- NULL
 colnames(mdepth) <- seq(1, 30, 1)
 mdepth <- as.data.frame(t(mdepth))
 mdepth <- setDT(mdepth, keep.rownames = T)[]
@@ -1264,8 +1271,9 @@ rm(mdep, sedep)
 
 setwd('H:/Acoustic tag - Preconditioning B/Data processing/Filtered Data/Recoded Day CSV/Outputs')
 #mdepth <- read.xlsx('DepthTotOutput.xlsx', sheet = 1, rows = seq(1, 17, 1), cols = seq(2, 32, 1), colNames = T, rowNames = T)
-mdepth <- read.csv('DepthTotOutput.csv')
+mdepth <- read.csv('DepthTotOutput-day.csv')
 rownames(mdepth) <- mdepth$X
+mdepth <- mdepth[c(1:8, 10:17),]
 mdepth[,c(1, 2, 3)] <- NULL
 colnames(mdepth) <- seq(1, 30, 1)
 mdepth <- as.data.frame(t(mdepth))
@@ -1292,13 +1300,15 @@ colnames(nacc2bdepth) <- c('daynum', 'tod', 'mdepth', 'se')
 
 rm(mdep, sedep)
 
-# vectors to position effect size asterisks
 
+# vectors to position effect size asterisks
 #accdpsig <- data.frame(daynum = unique(accdepth$daynum), mdepth = c(15, 12, 11, 8, 7, 6, 7, 7, 7, 6, 5, 7, 7, 8, 8, 7, 7, 6, 6, 7, 8, 9, 10, 10, 9, 10, 10, 10, 7, 7))
+wdepsig <-  c(15, 12.4, 10.5, 8.2, 7, 6, 8, 7.6, 7.4, 6.6, 4.6, 7.3, 7, 8.5, 8, 7.6, 7.9, 6.5, 6.1, 7.4, 8, 9, 10, 10, 9, 7.7, 9.9, 9.6, 7.6, 8, 8, 8, 8, 8, 8, 8, rep(0, 33))
 accdepth$sig <- rep(c(15, 12.4, 10.5, 8.2, 7, 6, 8, 7.6, 7.4, 6.6, 4.6, 7.3, 7, 8.5, 8, 7.6, 7.9, 6.5, 6.1, 7.4, 8, 9, 10, 10, 9, 7.7, 9.9, 9.6, 7.6, 8), 2)
 naccdepth$sig <- rep(c(1, 14.9, 15.4, 1, 1, 14.9, 11.5, 1, 12.3, 12.3, 10.5, 1, 1, 11.1, 1, 1, 1, 10.8, 10.6, 1, 1, 1, 1, 10.9, 1, 1, 11.3, 1, 1, 1), 2)
 accact$sig <- rep(c(0.1, 0.1, 0.82, 0.86, 0.85, 1.13, 0.8, 0.74, 0.76, 0.81, 0.75, 0.8, 0.1, 0.8, 0.98, 0.1, 0.79, 0.82, 0.7, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.64, 0.1, 0.74, 0.1), 2)
 naccact$sig <- rep(c(0.1, 0.67, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.73, 0.8, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.72, 0.1, 0.1, 0.1, 0.1, 0.1), 2)
+
 
 # draw depth plots for acclimated and non acclimated groups
 
@@ -1316,8 +1326,8 @@ dplot <- ggplot(df, aes(x = daynum, y = mdepth, group = tod)) +
   geom_errorbar(aes(ymin = mdepth-se, ymax = mdepth+se, group = tod, colour = tod), width = 0.2, size = 1) +
   scale_x_continuous(name = 'Exp. day', expand = c(0.01,0), breaks = seq(0, el, 5)) +
   scale_colour_manual(guide = guide_legend(title = NULL,  label.theme = element_text(size = fs, angle = 0, family = plotfont)), labels = c('Day', 'Night'), values = c('day_mean' = 'gray70', 'night_mean' = 'gray20')) +
-  theme(axis.text.x = element_text(size = fs), axis.text.y = element_text(size = fs))  #+
-#geom_text(aes(x = daynum, y = sig), label = rep(c(' ', '*', '*', '*', '**', ' ', ' ', '***', '*', '*', '*', '**', ' ', '*', ' ', '*', '*', '*', '**', '**', ' ', ' ', ' ', ' ', ' ', '*', '*', '*', '*', '*'), 2), size = 5, hjust = 'centre')
+  theme(axis.text.x = element_text(size = fs), axis.text.y = element_text(size = fs)) #+
+  #geom_text(aes(x = daynum, y = sig), label = labs, size = 5, hjust = 'centre')
 
 if(leg == T){
   dplot <- dplot + theme(legend.position = c(0.9, 0.8))
@@ -1351,6 +1361,21 @@ nacc2bdp <- dplot
 # draw depth plots for all studies
 plot_grid(wdp, fdp, acc2adp, nacc2adp, acc2bdp, nacc2bdp, labels = c('(a) wild', '(b) farmed', '(c) hatchery acclimated', '(d) non-acclimated', '(e) hatchery & pen acclimated', '(f) non-acclimated'), rel_widths = c(1,1), hjust = c(-1.4, -1, -0.48, -0.55, -0.35, -0.52), vjust = c(3, 3, 3, 3, 3, 3), nrow = 3, ncol = 2, label_size = fs)
 
+# stat analysis for depths (stats for text not plots)
+
+wdepth$tod <- paste0('w_', wdepth$tod)
+fdepth$tod <- paste0('f_', fdepth$tod)
+wfdepth <- rbind(wdepth, fdepth)
+
+wfdepth$daynum <- as.factor(wfdepth$daynum)
+
+model <- aov(mdepth~tod+daynum, wfdepth)
+TukeyHSD(model, 'tod')
+
+model <- aov(formula = mdepth~tod+daynum, data = wdepth)
+
+TukeyHSD(model, 'daynum')
+tukey <- TukeyHSD(model)
 
 
 # 14. Bar plots of individual fish night and day depth for all three trials----------------------------
@@ -1360,8 +1385,9 @@ library(openxlsx)
 
 # Read in wild vs. farmed depth data
 
-setwd('H:/Acoustic tag - Wild vs. Farmed/Data processing/Cropped data/Coded Fish CSV/Outputs')
+setwd('H:/Acoustic tag - Wild vs. Farmed/Data processing/Cropped data/Coded Day CSV/Outputs')
 wfdep <- read.csv('DepthTotOutput-fish.csv')
+wfdep <- wfdep[c(1:8, 10:17),]
 rownames(wfdep) <- wfdep$ID
 wfdep[,c(1,2)] <- NULL
 wfdep <- t(wfdep)
@@ -1411,7 +1437,8 @@ rm(mdep, depse)
 # Read in acclimated A depth data
 
 setwd('H:/Acoustic tag - Preconditioning A/Data processing/Filtered Data/Recoded Day CSV/Outputs')
-acc2adep <- read.csv('DepthTotOutput-byfish.csv')
+acc2adep <- read.csv('DepthTotOutput-fish.csv')
+acc2adep <- acc2adep[c(1:8, 10:17),]
 rownames(acc2adep) <- acc2adep$ID
 acc2adep[,c(1, 2)] <- NULL
 acc2adep <- t(acc2adep)
@@ -1461,7 +1488,8 @@ rm(mdep, depse)
 # Read in acclimated B depth data
 
 setwd('H:/Acoustic tag - Preconditioning B/Data processing/Filtered Data/Recoded Day CSV/Outputs')
-acc2bdep <- read.csv('DepthTotOutput-byfish.csv')
+acc2bdep <- read.csv('DepthTotOutput-fish.csv')
+acc2bdep <- acc2bdep[c(1:8, 10:17),]
 rownames(acc2bdep) <- acc2bdep$ID
 acc2bdep[,c(1,2)] <- NULL
 acc2bdep <- t(acc2bdep)
@@ -1542,6 +1570,7 @@ fishdepplot <- function(df, leg){
 
 fishdepplot(wdep, T)
 wfdp <- fdplot
+wfdp <- wfdp + annotate('text', x = 8, y = 15.3, label = '***') + annotate('text', x = 9, y = 14.7, label = '*')
 
 fishdepplot(fdep, F)
 ffdp <- fdplot
@@ -1554,6 +1583,7 @@ n2afdp <- fdplot
 
 fishdepplot(hacc2bdep, F)
 h2bfdp <- fdplot
+h2bfdp <- h2bfdp + annotate('text', x = 2, y = 17.5, label = '***')
 
 fishdepplot(nacc2bdep, F)
 n2bfdp <- fdplot
@@ -1580,6 +1610,8 @@ boxdata$time <- as.factor(boxdata$time)
 boxdata$time <- factor(boxdata$time, levels(boxdata$time)[c(11, 12, 1, 2, 5, 6, 7, 8, 3, 4, 9, 10)])
 boxdata$TOD <- ifelse(str_detect(boxdata$time, 'day') == T, 'day', 'night')
 
+depsig <- data.frame(fishID = seq(1, 12, 1), depth = c(9, 7, 13, 12, 10, 10, 9, 9, 3, 3, 14, 14))
+
 boxdep <- ggplot(boxdata, aes(x = time, y = mean)) + 
   theme_classic() + 
   theme(text = element_text(family = plotfont, size = fs), plot.margin = margin(-10, 30, 10, 30, 'pt'), 
@@ -1587,7 +1619,9 @@ boxdep <- ggplot(boxdata, aes(x = time, y = mean)) +
   geom_boxplot(outlier.shape = NA, aes(fill = TOD), width = 0.4) +
   scale_y_reverse(name = 'Depth (m)', expand = c(0,0), limits = c(25, 0), breaks = seq(0, 25, 5)) +
   scale_x_discrete(name = '', position = 'top') +
-  scale_fill_manual(values = c('gray90', 'gray35'))
+  scale_fill_manual(values = c('gray90', 'gray35')) +
+  #geom_text(x = depsig$fishID, y = depsig$depth, label = c('b', 'bcd', 'a', 'a', 'ab', 'bc', 'bc', 'bc', 'cd', 'd', 'ab', 'ab'), size = 5, hjust = 'centre')
+  annotate('text', x = seq(1, 12, 1), y = c(8, 6.5, 12.5, 10.8, 9.3, 9.1, 8, 8.3, 2, 1.4, 10.4, 10.8), label = c('b', 'bcd', 'a', 'a', 'ab', 'bc', 'bc', 'bc', 'cd', 'd', 'ab', 'ab'))
 
 plot_grid(plot_grid(wfdp, ffdp, h2afdp, n2afdp, h2bfdp, n2bfdp, 
           labels = c('(a) wild', '(b) farmed', '(c) hatchery acclimated', '(d) non-acclimated', '(e) hatchery & pen acclimated', '(f) non-acclimated'),  
@@ -1595,6 +1629,19 @@ plot_grid(plot_grid(wfdp, ffdp, h2afdp, n2afdp, h2bfdp, n2bfdp,
           vjust = c(rep(21, 7)), nrow = 3, ncol = 2, label_size = fs), boxdep, labels = c('', '(g)'), 
           nrow = 2, ncol = 1, rel_heights = c(0.75, 0.25), label_size = fs, vjust = 20, hjust = -5)
 
+
+# stats for boxplot
+library(agricolae)
+
+boxdata$time <- mapvalues(boxdata$time, from = c('wild\nday', 'wild\nnight', 'farmed\nday', 'farmed\nnight', 'hatchery\nacclimated\nday', 
+                            'hatchery\nacclimated\nnight',  'non-\nacclimated\n(2a)\nday', 'non-\nacclimated\n(2a)\nnight', 
+                            'hatchery\n& pen\nacclimated\nday', 'hatchery\n& pen\nacclimated\nnight', 'non-\nacclimated\n(2b)\nday', 
+                            'non-\nacclimated\n(2b)\nnight'), to = c('wday', 'wnight', 'fday', 'fnight', 'ha2aday', 'ha2anight', 
+                            'na2aday', 'na2anight', 'hp2bday', 'hp2bnight', 'na2bday', 'na2bnight'))
+
+model <- aov(mean~time, boxdata)
+#TukeyHSD(model)
+HSD.test(model, 'time', group = T, console = T, alpha = 0.01)
 
 
 # 15. Line plots of night and day activity for all three trials------------------------------------
@@ -1611,7 +1658,8 @@ library(cowplot)
 
 setwd('H:/Acoustic tag - Wild vs. Farmed/Data processing/Cropped data/Coded Day CSV/Outputs')
 #mdepth <- read.xlsx('DepthTotOutput.xlsx', sheet = 1, rows = seq(1, 17, 1), cols = seq(2, 32, 1), colNames = T, rowNames = T)
-mact <- read.csv('ActivityTotOutput-se.csv')
+mact <- read.csv('ActivityTotOutput-days.csv')
+mact <- mact[c(1:8, 10:17),]
 rownames(mact) <- mact$X
 mact[,c(1, 2, 3)] <- NULL
 colnames(mact) <- c(seq(1, 14, 1), seq(19, 26, 1), seq(29, 43, 1))
@@ -1646,7 +1694,8 @@ rm(mdep, sedep)
 # Read and modify trial 2a depth data
 
 setwd('H:/Acoustic tag - Preconditioning A/Data processing/Filtered Data/Recoded Day CSV/Outputs')
-mact <- read.csv('ActivityTotOutput-days-se.csv')
+mact <- read.csv('ActivityTotOutput-days.csv')
+mact <- mact[c(1:8, 10:17),]
 rownames(mact) <- mact$X
 mact[,c(1, 2, 3, 4)] <- NULL
 colnames(mact) <- seq(1, 30, 1)
@@ -1678,7 +1727,8 @@ rm(mdep, sedep)
 # Read and modify trial 2b depth data
 
 setwd('H:/Acoustic tag - Preconditioning B/Data processing/Filtered Data/Recoded Day CSV/Outputs')
-mact <- read.csv('ActivityTotOutput-days-se.csv')
+mact <- read.csv('ActivityTotOutput-days.csv')
+mact <- mact[c(1:8, 10:17),]
 rownames(mact) <- mact$X
 mact[,c(1, 2, 3)] <- NULL
 colnames(mact) <- seq(1, 30, 1)
@@ -1710,18 +1760,43 @@ rm(mdep, sedep)
 
 # vectors to position effect size asterisks
 
-#accdpsig <- data.frame(daynum = unique(accdepth$daynum), mdepth = c(15, 12, 11, 8, 7, 6, 7, 7, 7, 6, 5, 7, 7, 8, 8, 7, 7, 6, 6, 7, 8, 9, 10, 10, 9, 10, 10, 10, 7, 7))
-#accdepth$sig <- rep(c(15, 12.4, 10.5, 8.2, 7, 6, 8, 7.6, 7.4, 6.6, 4.6, 7.3, 7, 8.5, 8, 7.6, 7.9, 6.5, 6.1, 7.4, 8, 9, 10, 10, 9, 7.7, 9.9, 9.6, 7.6, 8), 2)
-#naccdepth$sig <- rep(c(1, 14.9, 15.4, 1, 1, 14.9, 11.5, 1, 12.3, 12.3, 10.5, 1, 1, 11.1, 1, 1, 1, 10.8, 10.6, 1, 1, 1, 1, 10.9, 1, 1, 11.3, 1, 1, 1), 2)
-#accact$sig <- rep(c(0.1, 0.1, 0.82, 0.86, 0.85, 1.13, 0.8, 0.74, 0.76, 0.81, 0.75, 0.8, 0.1, 0.8, 0.98, 0.1, 0.79, 0.82, 0.7, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.64, 0.1, 0.74, 0.1), 2)
-#naccact$sig <- rep(c(0.1, 0.67, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.73, 0.8, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.72, 0.1, 0.1, 0.1, 0.1, 0.1), 2)
+wactsig <- data.frame(day = unique(wact$daynum),
+                      act = wact$mean[wact$tod == 'day_mean']+wact$se[wact$tod == 'day_mean']+0.06,
+                      #act = c(0, 0, 0, 0.55, 0.49, 0.47, 0.46, 0.455, 0.48, 0.45, 0.47, 0.475, 0.54, 0.49, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5),
+                      siglab = c('', '', '', '***', '***', '*', '***', '**', '*', '***', '***', '**', '***', '*', '', '', '**', '*', '**', '*', '**', '*', '', '**', '', '***', '***', '**', '**', '*', '***', '', '', '', '**', '', ''))
 
-# draw depth plots for acclimated and non acclimated groups
+factsig <- data.frame(day = unique(fact$daynum),
+                      act = fact$mean[fact$tod == 'day_mean']+fact$se[fact$tod == 'day_mean']+0.06,
+                      #act = c(0, 0, 0, 0.55, 0.49, 0.47, 0.46, 0.455, 0.48, 0.45, 0.47, 0.475, 0.54, 0.49, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5),
+                      siglab = c('', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '*', '*', '*', '', '*', '**', '', '', '**', '', '', ''))
+
+ac2aactsig <- data.frame(day = unique(acc2aact$daynum),
+                      act = acc2aact$mean[acc2aact$tod == 'night_mean']+acc2aact$se[acc2aact$tod == 'night_mean']+0.06,
+                      #act = c(0, 0, 0, 0.55, 0.49, 0.47, 0.46, 0.455, 0.48, 0.45, 0.47, 0.475, 0.54, 0.49, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5),
+                      siglab = c('', '', '', '*', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''))
+
+na2aactsig <- data.frame(day = unique(nacc2aact$daynum),
+                         act = nacc2aact$mean[nacc2aact$tod == 'day_mean']+nacc2aact$se[nacc2aact$tod == 'day_mean']+0.06,
+                         #act = c(0, 0, 0, 0.55, 0.49, 0.47, 0.46, 0.455, 0.48, 0.45, 0.47, 0.475, 0.54, 0.49, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5),
+                         siglab = c('', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '**', '', '', '', '', ''))
+
+ac2bactsig <- data.frame(day = unique(acc2bact$daynum),
+                         act = acc2bact$mean[acc2bact$tod == 'day_mean']+acc2bact$se[acc2bact$tod == 'day_mean']+0.06,
+                         #act = c(0, 0, 0, 0.55, 0.49, 0.47, 0.46, 0.455, 0.48, 0.45, 0.47, 0.475, 0.54, 0.49, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5),
+                         siglab = c('', '', '', '**', '', '', '*', '', '*', '', '', '', '', '**', '*', '', '*', '', '', '', '', '', '', '', '*', '', '', '', '', ''))
+
+na2bactsig <- data.frame(day = unique(nacc2bact$daynum),
+                         #act = nacc2bact$mean[nacc2bact$tod == 'day_mean']+nacc2bact$se[nacc2bact$tod == 'day_mean']+0.06,
+                         act = c(0, 0.66, 0, 0, 0, 0, 0, 0, 0, 0.73, 0, 0, 0, 0, 0, 0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5),
+                         siglab = c('', '**', '', '', '', '', '', '', '', '*', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''))
+
+
+# draw activity plots for acclimated and non acclimated groups
 
 plotfont <- 'Arial'
 fs <- 12
 
-mactplot <- function(df, leg, el){
+mactplot <- function(df, leg, el, sig){
   
   aplot <- ggplot(df, aes(x = daynum, y = mean, group = tod)) +
     theme_classic() +
@@ -1732,9 +1807,9 @@ mactplot <- function(df, leg, el){
     geom_errorbar(aes(ymin = mean-se, ymax = mean+se, group = tod, colour = tod), width = 0.2, size = 1) +
     scale_x_continuous(name = 'Exp. day', expand = c(0.01,0), breaks = seq(0, el, 5)) +
     scale_colour_manual(guide = guide_legend(title = NULL,  label.theme = element_text(size = fs, angle = 0, family = plotfont)), labels = c('Day', 'Night'), values = c('day_mean' = 'gray70', 'night_mean' = 'gray20')) +
-    theme(axis.text.x = element_text(size = fs), axis.text.y = element_text(size = fs))  #+
-  #geom_text(aes(x = daynum, y = sig), label = rep(c(' ', '*', '*', '*', '**', ' ', ' ', '***', '*', '*', '*', '**', ' ', '*', ' ', '*', '*', '*', '**', '**', ' ', ' ', ' ', ' ', ' ', '*', '*', '*', '*', '*'), 2), size = 5, hjust = 'centre')
-  
+    theme(axis.text.x = element_text(size = fs), axis.text.y = element_text(size = fs)) +
+    annotate('text', x = sig$day, y = sig$act, label = sig$siglab, angle = 90)
+
   if(leg == T){
     aplot <- aplot + theme(legend.position = c(0.2, 0.8))
   } else {
@@ -1745,22 +1820,22 @@ mactplot <- function(df, leg, el){
   
 }
 
-mactplot(wact, T, 47)
+mactplot(wact, T, 47, wactsig)
 wap <- aplot
 
-mactplot(fact, F, 47)
+mactplot(fact, F, 47, factsig)
 fap <- aplot
 
-mactplot(acc2aact, F, 30)
+mactplot(acc2aact, F, 30, ac2aactsig)
 acc2aap <- aplot
 
-mactplot(nacc2aact, F, 30)
+mactplot(nacc2aact, F, 30, na2aactsig)
 nacc2aap <- aplot
 
-mactplot(acc2bact, F, 30)
+mactplot(acc2bact, F, 30, ac2bactsig)
 acc2bap <- aplot
 
-mactplot(nacc2bact, F, 30)
+mactplot(nacc2bact, F, 30, na2bactsig)
 nacc2bap <- aplot
 
 
@@ -1780,7 +1855,8 @@ library(openxlsx)
 # Read in wild vs. farmed activity data
 
 setwd('H:/Acoustic tag - Wild vs. Farmed/Data processing/Cropped data/Coded Day CSV/Outputs')
-wfact <- read.csv('ActivityTotOutput-fish-se.csv')
+wfact <- read.csv('ActivityTotOutput-fish.csv')
+wfact <- wfact[c(1:8, 10:17),]
 rownames(wfact) <- wfact$ID
 wfact[,c(1, 2)] <- NULL
 wfact <- t(wfact)
@@ -1830,7 +1906,8 @@ rm(mdep, depse)
 # Read in acclimated A activity data
 
 setwd('H:/Acoustic tag - Preconditioning A/Data processing/Filtered Data/Recoded Day CSV/Outputs')
-acc2aact <- read.csv('ActivityTotOutput-fish-se.csv')
+acc2aact <- read.csv('ActivityTotOutput-fish.csv')
+acc2aact <- acc2aact[c(1:8, 10:17),]
 rownames(acc2aact) <- acc2aact$ID
 acc2aact[,c(1, 2)] <- NULL
 acc2aact <- t(acc2aact)
@@ -1879,7 +1956,8 @@ rm(mdep, depse)
 # Read in acclimated B activity data
 
 setwd('H:/Acoustic tag - Preconditioning B/Data processing/Filtered Data/Recoded Day CSV/Outputs')
-acc2bact <- read.csv('ActivityTotOutput-fish-se.csv')
+acc2bact <- read.csv('ActivityTotOutput-fish.csv')
+acc2bact <- acc2bact[c(1:8, 10:17),]
 rownames(acc2bact) <- acc2bact$ID
 acc2bact[,c(1, 2)] <- NULL
 acc2bact <- t(acc2bact)
@@ -1924,11 +2002,38 @@ nacc2bact$time <- substring(nacc2bact$time, 4)
 nacc2bact <- filter(nacc2bact, time != 'dawn_mean' & time != 'dusk_mean') # filter out dawn and dusk data
 rm(mdep, depse)
 
-# Create dataframes of significance levels
+# vectors to position effect size asterisks
 
-#hpacsig <- data.frame(fishID = unique(hpacact$fishID), act = c(0.48, 0.5, 0.6, 0.61, 0.75, 0.82, 0.9, 0.99, 1.06, 1.05))
-#wsig <- data.frame(fishID = unique(wact$fishID), act = c(0.31, 0.42, 0.43, 0.43, 0.44, 0.45, 0.45, 0.45, 0.47, 0.49, 0.5, 0.58, 0.59, 0.59))
-#hacsig <- data.frame(fishID = unique(hacact$fishID), act = c(0.6, 0.6, 0.61, 0.63, 0.64, 0.64, 0.64, 0.7, 0.7, 0.72, 0.85, 0.85, 1.01))
+wactsig <- data.frame(fish = unique(wact$fishID),
+                      act = wact$mean[wact$time == 'day_mean']+wact$depse[wact$time == 'day_mean']+0.06,
+                      #act = c(0, 0, 0, 0.55, 0.49, 0.47, 0.46, 0.455, 0.48, 0.45, 0.47, 0.475, 0.54, 0.49),
+                      siglab = c('', '***', '***', '***', '***', '', '***', '***', '***', '***', '***', '***', '***', '***'))
+
+factsig <- data.frame(fish = unique(fact$fishID),
+                      act = fact$mean[fact$time == 'day_mean']+fact$depse[fact$time == 'day_mean']+0.06,
+                      #act = c(0, 0, 0, 0.55, 0.49, 0.47, 0.46, 0.455, 0.48, 0.45, 0.47, 0.475, 0.54, 0.49),
+                      siglab = c('', '', '', '*', '***', '', '', '', '', '*'))
+
+ha2aactsig <- data.frame(fish = unique(hacc2aact$fishID),
+                      #act = hacc2aact$mean[hacc2aact$time == 'day_mean']+hacc2aact$depse[hacc2aact$time == 'day_mean']+0.06,
+                      act = c(0, 0, 0, 0, 0, 0, 0.65, 0, 0.75, 0, 0, 0, 0.98),
+                      siglab = c('', '', '', '', '', '', '**', '', '*', '', '', '', '***'))
+
+na2aactsig <- data.frame(fish = unique(nacc2aact$fishID),
+                         act = nacc2aact$mean[nacc2aact$time == 'day_mean']+nacc2aact$depse[nacc2aact$time == 'day_mean']+0.06,
+                         #act = c(0, 0, 0, 0, 0, 0, 0.65, 0, 0.75, 0, 0, 0, 0.98),
+                         siglab = c('', '', '', '', '*', '', '', '', '', '', '', '', '', ''))
+
+ha2bactsig <- data.frame(fish = unique(hacc2bact$fishID),
+                         act = hacc2bact$mean[hacc2bact$time == 'day_mean']+hacc2bact$depse[hacc2bact$time == 'day_mean']+0.06,
+                         #act = c(0, 0, 0, 0, 0, 0, 0.65, 0, 0.75, 0, 0, 0, 0.98),
+                         siglab = c('*', '', '', '', '***', '***', '**', '***', '***', '***'))
+
+na2bactsig <- data.frame(fish = unique(nacc2bact$fishID),
+                         act = nacc2bact$mean[nacc2bact$time == 'day_mean']+nacc2bact$depse[nacc2bact$time == 'day_mean']+0.06,
+                         #act = c(0, 0, 0, 0, 0, 0, 0.65, 0, 0.75, 0, 0, 0, 0.98),
+                         siglab = c('', '', '', '', '', '', '', '', '', '', '', '', '*', '***'))
+
 
 # Draw barplots of activity
 
@@ -1936,7 +2041,7 @@ rm(mdep, depse)
 plotfont <- 'Arial'
 fs <- 12
 
-fishactplot <- function(df, leg){
+fishactplot <- function(df, leg, sig){
   
   faplot <- ggplot(df, aes(x = fishID, y = mean)) +
     theme_classic() + 
@@ -1944,10 +2049,10 @@ fishactplot <- function(df, leg){
     geom_bar(aes(fill = time), stat = 'identity', position = 'dodge') + 
     geom_errorbar(aes(ymin = mean-depse, ymax = mean+depse, fill = time), width = 0.4, position = position_dodge(1)) +
     scale_fill_manual(guide = guide_legend(title = NULL,  label.theme = element_text(size = fs, angle = 0, family = plotfont)), labels = c('Day', 'Night'), values = c('day_mean' = 'gray80', 'night_mean' = 'gray20')) +
-    scale_y_continuous(name = 'Activity (BL/s)', expand = c(0,0), limits = c(0, 1), breaks = seq(0, 1, 0.1)) + 
+    scale_y_continuous(name = 'Activity (BL/s)', expand = c(0,0), limits = c(0, 1.1), breaks = seq(0, 1.1, 0.1)) + 
     scale_x_discrete(name = 'fish ID', expand = c(0,0)) +
-    theme(axis.text.x = element_text(size = 10), axis.text.y = element_text(size = fs)) # +
-  #geom_text(data = wsig, label = c(' ', '*', '*', '**', '*', '*', '*', '*', '*', '*', '*', '**', '*', '**'), size = 5, hjust = 'centre')
+    theme(axis.text.x = element_text(size = 10), axis.text.y = element_text(size = fs)) +
+    annotate('text', x = sig$fish, y = sig$act, label = sig$siglab, angle = 90)
   
   if(leg == T){
     faplot <- faplot + theme(legend.position = c(0.85, 0.85))
@@ -1958,27 +2063,28 @@ fishactplot <- function(df, leg){
   faplot <<- faplot
 }
 
-fishactplot(wact, F)
+fishactplot(wact, F, wactsig)
 wfap <- faplot
 
-fishactplot(fact, T)
+fishactplot(fact, T, factsig)
 ffap <- faplot
 
-fishactplot(hacc2aact, F)
+fishactplot(hacc2aact, F, ha2aactsig)
 h2afap <- faplot
 
-fishactplot(nacc2aact, F)
+fishactplot(nacc2aact, F, na2aactsig)
 n2afap <- faplot
 
-fishactplot(hacc2bact, F)
+fishactplot(hacc2bact, F, ha2bactsig)
 h2bfap <- faplot
 
-fishactplot(nacc2bact, F)
+fishactplot(nacc2bact, F, na2bactsig)
 n2bfap <- faplot
 
 
 plot_grid(wfap, ffap, h2afap, n2afap, h2bfap, n2bfap, labels = c('(a) wild', '(b) farmed', '(c) hatchery acclimated', '(d) non-acclimated', '(e) hatchery & pen acclimated', '(f) non-acclimated'),  rel_widths = c(1,1), hjust = c(-1.4, -1, -0.48, -0.55, -0.35, -0.52), vjust = c(rep(2.5, 6)), nrow = 3, ncol = 2, label_size = fs)
 
+# boxplot of all groups
 
 wact$time <- paste0('wild\n', wact$time)
 fact$time <- paste0('farmed\n', fact$time)
@@ -1998,17 +2104,32 @@ boxact <- ggplot(boxdata, aes(x = time, y = mean)) +
   theme(text = element_text(family = plotfont, size = fs), plot.margin = margin(20, 30, -10, 30, 'pt'), 
         axis.text.x = element_text(angle = 0, hjust = 0.5), legend.position = 'none') + 
   geom_boxplot(outlier.shape = NA, aes(fill = TOD), width = 0.4) +
-  scale_y_continuous(name = 'activity (BL/s)', expand = c(0,0), limits = c(0, 1), breaks = seq(0, 1, 0.1)) +
+  scale_y_continuous(name = 'activity (BL/s)', expand = c(0,0), limits = c(0, 1.1), breaks = seq(0, 1.1, 0.1)) +
   scale_x_discrete(name = '', position = 'bottom') +
-  scale_fill_manual(values = c('gray90', 'gray35'))
+  scale_fill_manual(values = c('gray90', 'gray35')) +
+  annotate('text', x = seq(1, 12, 1), y = c(0.63, 0.4, 0.47, 0.46, 0.99, 0.85, 0.87, 0.82, 0.96, 0.7, 0.75, 0.75), label = c('ab', 'a', 'a', 'a', 'cd', 'cd', 'cd', 'cd', 'd', 'bc', 'cd', 'cd'))
 
-plot_grid(plot_grid(wfdp, ffdp, h2afdp, n2afdp, h2bfdp, n2bfdp, 
+
+plot_grid(plot_grid(wfap, ffap, h2afap, n2afap, h2bfap, n2bfap, 
                     labels = c('(a) wild', '(b) farmed', '(c) hatchery acclimated', '(d) non-acclimated', '(e) hatchery & pen acclimated', '(f) non-acclimated'),  
                     rel_widths = c(1,1), hjust = c(-1.4, -1, -0.48, -0.55, -0.35, -0.52), 
-                    vjust = c(rep(21, 7)), nrow = 3, ncol = 2, label_size = fs), boxact, labels = c('', '(g)'), 
-          nrow = 2, ncol = 1, rel_heights = c(0.75, 0.25), label_size = fs, vjust = 3, hjust = -6)
+                    vjust = c(rep(3, 7)), nrow = 3, ncol = 2, label_size = fs), boxact, labels = c('', '(g)'), 
+                    nrow = 2, ncol = 1, rel_heights = c(0.75, 0.25), label_size = fs, vjust = 3, hjust = -6)
 
 
+
+# stats for boxplot
+library(agricolae)
+
+boxdata$time <- mapvalues(boxdata$time, from = c('wild\nday', 'wild\nnight', 'farmed\nday', 'farmed\nnight', 'hatchery\nacclimated\nday', 
+                                                 'hatchery\nacclimated\nnight',  'non-\nacclimated\n(2a)\nday', 'non-\nacclimated\n(2a)\nnight', 
+                                                 'hatchery\n& pen\nacclimated\nday', 'hatchery\n& pen\nacclimated\nnight', 'non-\nacclimated\n(2b)\nday', 
+                                                 'non-\nacclimated\n(2b)\nnight'), to = c('wday', 'wnight', 'fday', 'fnight', 'ha2aday', 'ha2anight', 
+                                                                                          'na2aday', 'na2anight', 'hp2bday', 'hp2bnight', 'na2bday', 'na2bnight'))
+
+model <- aov(mean~time, boxdata)
+#TukeyHSD(model)
+HSD.test(model, 'time', group = T, console = T, alpha = 0.05)
 
 
 # 17. Night and day Locations for wild vs. farmed and acclimated vs. non-acclimated B--------------------------
@@ -2850,7 +2971,7 @@ kudfig %<a-% {
 close.screen(all = T)
 
 
-# 20. Cumulative KUDS for wild vs farmed and trial 2b.
+# 20. Cumulative KUDS for wild vs farmed and trial 2b.------------------------------------------
 
 # load wild and farmed cumulative kud data
 
