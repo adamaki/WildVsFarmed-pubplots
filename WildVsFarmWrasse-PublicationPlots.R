@@ -1303,11 +1303,11 @@ rm(mdep, sedep)
 
 # vectors to position effect size asterisks
 #accdpsig <- data.frame(daynum = unique(accdepth$daynum), mdepth = c(15, 12, 11, 8, 7, 6, 7, 7, 7, 6, 5, 7, 7, 8, 8, 7, 7, 6, 6, 7, 8, 9, 10, 10, 9, 10, 10, 10, 7, 7))
-wdepsig <-  c(15, 12.4, 10.5, 8.2, 7, 6, 8, 7.6, 7.4, 6.6, 4.6, 7.3, 7, 8.5, 8, 7.6, 7.9, 6.5, 6.1, 7.4, 8, 9, 10, 10, 9, 7.7, 9.9, 9.6, 7.6, 8, 8, 8, 8, 8, 8, 8, rep(0, 33))
-accdepth$sig <- rep(c(15, 12.4, 10.5, 8.2, 7, 6, 8, 7.6, 7.4, 6.6, 4.6, 7.3, 7, 8.5, 8, 7.6, 7.9, 6.5, 6.1, 7.4, 8, 9, 10, 10, 9, 7.7, 9.9, 9.6, 7.6, 8), 2)
-naccdepth$sig <- rep(c(1, 14.9, 15.4, 1, 1, 14.9, 11.5, 1, 12.3, 12.3, 10.5, 1, 1, 11.1, 1, 1, 1, 10.8, 10.6, 1, 1, 1, 1, 10.9, 1, 1, 11.3, 1, 1, 1), 2)
-accact$sig <- rep(c(0.1, 0.1, 0.82, 0.86, 0.85, 1.13, 0.8, 0.74, 0.76, 0.81, 0.75, 0.8, 0.1, 0.8, 0.98, 0.1, 0.79, 0.82, 0.7, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.64, 0.1, 0.74, 0.1), 2)
-naccact$sig <- rep(c(0.1, 0.67, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.73, 0.8, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.72, 0.1, 0.1, 0.1, 0.1, 0.1), 2)
+#wdepsig <-  c(15, 12.4, 10.5, 8.2, 7, 6, 8, 7.6, 7.4, 6.6, 4.6, 7.3, 7, 8.5, 8, 7.6, 7.9, 6.5, 6.1, 7.4, 8, 9, 10, 10, 9, 7.7, 9.9, 9.6, 7.6, 8, 8, 8, 8, 8, 8, 8, rep(0, 33))
+#accdepth$sig <- rep(c(15, 12.4, 10.5, 8.2, 7, 6, 8, 7.6, 7.4, 6.6, 4.6, 7.3, 7, 8.5, 8, 7.6, 7.9, 6.5, 6.1, 7.4, 8, 9, 10, 10, 9, 7.7, 9.9, 9.6, 7.6, 8), 2)
+#naccdepth$sig <- rep(c(1, 14.9, 15.4, 1, 1, 14.9, 11.5, 1, 12.3, 12.3, 10.5, 1, 1, 11.1, 1, 1, 1, 10.8, 10.6, 1, 1, 1, 1, 10.9, 1, 1, 11.3, 1, 1, 1), 2)
+#accact$sig <- rep(c(0.1, 0.1, 0.82, 0.86, 0.85, 1.13, 0.8, 0.74, 0.76, 0.81, 0.75, 0.8, 0.1, 0.8, 0.98, 0.1, 0.79, 0.82, 0.7, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.64, 0.1, 0.74, 0.1), 2)
+#naccact$sig <- rep(c(0.1, 0.67, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.73, 0.8, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.72, 0.1, 0.1, 0.1, 0.1, 0.1), 2)
 
 
 # draw depth plots for acclimated and non acclimated groups
@@ -1321,6 +1321,7 @@ dplot <- ggplot(df, aes(x = daynum, y = mdepth, group = tod)) +
   theme_classic() +
   theme(text = element_text(family = plotfont, size = fs), plot.margin = margin(10, 5, 10, 1, 'pt')) +
   scale_y_reverse(name = 'Mean depth (m)', limits = c(25, 0), breaks = seq(25, 0, -5), expand = c(0,0)) +
+  #scale_y_continuous(name = 'Mean depth (m)', limits = c(0, 25), breaks = seq(0, 25, 5), expand = c(0,0)) +
   geom_line(aes(colour = tod), stat = 'identity', size = 1) + 
   geom_point(aes(colour = tod), size = 2) +
   geom_errorbar(aes(ymin = mdepth-se, ymax = mdepth+se, group = tod, colour = tod), width = 0.2, size = 1) +
@@ -1341,21 +1342,27 @@ dplot <<- dplot
 
 mdepplot(wdepth, F, 47)
 wdp <- dplot
+wdp <- wdp + annotate('segment', x = 1, y = 15.5446, xend = 42, yend = 15.5446+(-0.1181*42), size = 1, linetype = 'dashed', colour = 'gray40')
 
 mdepplot(fdepth, T, 47)
 fdp <- dplot
+fdp <- fdp + annotate('segment', x = 1, y = 17.74954, xend = 42, yend = 17.74954+(-0.02076*42), size = 1, linetype = 'dashed', colour = 'gray40')
 
 mdepplot(acc2adepth, F, 30)
 acc2adp <- dplot
+acc2adp <- acc2adp + annotate('segment', x = 1, y = 15.6014, xend = 31, yend = 15.6014+(-0.1106*31), size = 1, linetype = 'dashed', colour = 'gray40')
 
 mdepplot(nacc2adepth, F, 30)
 nacc2adp <- dplot
+nacc2adp <- nacc2adp + annotate('segment', x = 1, y = 16.233, xend = 31, yend = 16.233+(-0.161*31), size = 1, linetype = 'dashed', colour = 'gray40')
 
 mdepplot(acc2bdepth, F, 30)
 acc2bdp <- dplot
+acc2bdp <- acc2bdp + annotate('segment', x = 1, y = 10.67790, xend = 31, yend = 10.67790+(-0.03037*30), size = 1, linetype = 'dashed', colour = 'gray40')
 
 mdepplot(nacc2bdepth, F, 30)
 nacc2bdp <- dplot
+nacc2bdp <- nacc2bdp + annotate('segment', x = 1, y = 15.857, xend = 31, yend = 15.857+(-0.114*30), size = 1, linetype = 'dashed', colour = 'gray40')
 
 
 # draw depth plots for all studies
@@ -1363,10 +1370,15 @@ plot_grid(wdp, fdp, acc2adp, nacc2adp, acc2bdp, nacc2bdp, labels = c('(a) wild',
 
 # stat analysis for depths (stats for text not plots)
 
+# wild vs farmed stats
+mean(wdepth$mdepth) # mean depth in wild fish
+sd(wdepth$mdepth) # sd in wild fish
+mean(fdepth$mdepth) # mean depth in farmed fish
+sd(fdepth$mdepth) # sd depth in farmed fish
+
 wdepth$tod <- paste0('w_', wdepth$tod)
 fdepth$tod <- paste0('f_', fdepth$tod)
 wfdepth <- rbind(wdepth, fdepth)
-
 wfdepth$daynum <- as.factor(wfdepth$daynum)
 
 model <- aov(mdepth~tod+daynum, wfdepth)
@@ -1376,6 +1388,48 @@ model <- aov(formula = mdepth~tod+daynum, data = wdepth)
 
 TukeyHSD(model, 'daynum')
 tukey <- TukeyHSD(model)
+
+# trial 2a stats
+mean(acc2adepth$mdepth) # mean depth in hatchery acclimated fish
+sd(acc2adepth$mdepth) # sd depth in hatchery acclimated fish
+mean(nacc2adepth$mdepth) # mean depth in non-acclimated fish
+sd(nacc2adepth$mdepth) # sd depth in non-acclimated fish
+
+# compare two groups anova
+acc2adepth$group <- 'ha'
+nacc2adepth$group <- 'na'
+twoadepth <- rbind(acc2adepth, nacc2adepth)
+summary(aov(mdepth~group, twoadepth))
+
+# compare night and day 2-way anova with tukey
+acc2adepth$tod <- paste0('ha_', acc2adepth$tod)
+nacc2adepth$tod <- paste0('na_', nacc2adepth$tod)
+twoadepth <- rbind(acc2adepth, nacc2adepth)
+twoadepth$daynum <- as.factor(twoadepth$daynum)
+
+model <- aov(mdepth~tod+daynum, twoadepth)
+TukeyHSD(model, 'tod')
+
+# trial 2b stats
+mean(acc2bdepth$mdepth, na.rm = T) # mean depth in hatchery acclimated fish
+sd(acc2bdepth$mdepth, na.rm = T) # sd depth in hatchery acclimated fish
+mean(nacc2bdepth$mdepth, na.rm = T) # mean depth in non-acclimated fish
+sd(nacc2bdepth$mdepth, na.rm = T) # sd depth in non-acclimated fish
+
+# compare two groups anova
+acc2bdepth$group <- 'ha'
+nacc2bdepth$group <- 'na'
+twoadepth <- rbind(acc2bdepth, nacc2bdepth)
+summary(aov(mdepth~group, twoadepth))
+
+# compare night and day 2-way anova with tukey
+acc2bdepth$tod <- paste0('ha_', acc2bdepth$tod)
+nacc2bdepth$tod <- paste0('na_', nacc2bdepth$tod)
+twobdepth <- rbind(acc2bdepth, nacc2bdepth)
+twobdepth$daynum <- as.factor(twobdepth$daynum)
+
+model <- aov(mdepth~tod+daynum, twobdepth)
+TukeyHSD(model, 'tod')
 
 
 # 14. Bar plots of individual fish night and day depth for all three trials----------------------------
@@ -1691,7 +1745,7 @@ fact <- filter(fact, !is.na(mean))
 rm(mdep, sedep)
 
 
-# Read and modify trial 2a depth data
+# Read and modify trial 2a activity data
 
 setwd('H:/Acoustic tag - Preconditioning A/Data processing/Filtered Data/Recoded Day CSV/Outputs')
 mact <- read.csv('ActivityTotOutput-days.csv')
@@ -1724,7 +1778,7 @@ colnames(nacc2aact) <- c('daynum', 'tod', 'mean', 'se')
 rm(mdep, sedep)
 
 
-# Read and modify trial 2b depth data
+# Read and modify trial 2b activity data
 
 setwd('H:/Acoustic tag - Preconditioning B/Data processing/Filtered Data/Recoded Day CSV/Outputs')
 mact <- read.csv('ActivityTotOutput-days.csv')
@@ -1839,11 +1893,113 @@ mactplot(nacc2bact, F, 30, na2bactsig)
 nacc2bap <- aplot
 
 
-# draw depth plots for all studies
+# draw activity plots for all studies
 plot_grid(wap, fap, acc2aap, nacc2aap, acc2bap, nacc2bap, 
           labels = c('wild (a)', 'farmed (b)', 'hatchery acclimated (c)', 'non-acclimated (d)', 'hatchery & pen acclimated (e)', 'non-acclimated (f)'), 
           rel_widths = c(1,1), hjust = c(-7.6, -4.9, -1.65, -2.2, -1.1, -2.3), 
           vjust = c(3, 3, 3, 3, 3, 3), nrow = 3, ncol = 2, label_size = fs)
+
+# stat analysis for activity (stats for text not plots)
+
+# wild vs farmed stats
+mean(wact$mean) # mean act in wild fish
+sd(wact$mean) # sd in wild fish
+mean(fact$mean) # mean act in farmed fish
+sd(fact$mean) # sd act in farmed fish
+
+# mean wild daytime and night time activity
+mean(wact$mean[wact$tod == 'w_day_mean'])
+sd(wact$mean[wact$tod == 'w_day_mean'])
+mean(wact$mean[wact$tod == 'w_night_mean'])
+sd(wact$mean[wact$tod == 'w_night_mean'])
+
+# mean farmed daytime and night time activity
+mean(fact$mean[fact$tod == 'f_day_mean'])
+sd(fact$mean[fact$tod == 'f_day_mean'])
+mean(fact$mean[fact$tod == 'f_night_mean'])
+sd(fact$mean[fact$tod == 'f_night_mean'])
+
+wact$tod <- paste0('w_', wact$tod)
+fact$tod <- paste0('f_', fact$tod)
+wfact <- rbind(wact, fact)
+wfact$daynum <- as.factor(wfact$daynum)
+
+model <- aov(mean~tod+daynum, wfact) # 2-way anova
+TukeyHSD(model, 'tod')
+
+wact$daynum <- as.factor(wact$daynum)
+model <- aov(formula = mean~tod, data = fact)
+
+TukeyHSD(model, 'daynum')
+tukey <- TukeyHSD(model)
+
+# trial 2a stats
+mean(acc2aact$mean) # mean act in hatchery acclimated fish
+sd(acc2aact$mean) # sd act in hatchery acclimated fish
+mean(nacc2aact$mean) # mean act in non-acclimated fish
+sd(nacc2aact$mean) # sd act in non-acclimated fish
+
+# mean acclimated daytime and night time activity
+mean(acc2aact$mean[acc2aact$tod == 'ha_day_mean'])
+sd(acc2aact$mean[acc2aact$tod == 'ha_day_mean'])
+mean(acc2aact$mean[acc2aact$tod == 'ha_night_mean'])
+sd(acc2aact$mean[acc2aact$tod == 'ha_night_mean'])
+
+# mean non-acclimated daytime and night time activity
+mean(nacc2aact$mean[nacc2aact$tod == 'na_day_mean'])
+sd(nacc2aact$mean[nacc2aact$tod == 'na_day_mean'])
+mean(nacc2aact$mean[nacc2aact$tod == 'na_night_mean'])
+sd(nacc2aact$mean[nacc2aact$tod == 'na_night_mean'])
+
+# compare two groups anova
+acc2aact$group <- 'ha'
+nacc2aact$group <- 'na'
+twoaact <- rbind(acc2aact, nacc2aact)
+summary(aov(mean~group, twoaact))
+
+# compare night and day 2-way anova with tukey
+acc2aact$tod <- paste0('ha_', acc2aact$tod)
+nacc2aact$tod <- paste0('na_', nacc2aact$tod)
+twoaact <- rbind(acc2aact, nacc2aact)
+twoaact$daynum <- as.factor(twoaact$daynum)
+
+model <- aov(mean~tod+daynum, twoaact)
+TukeyHSD(model, 'tod')
+
+# trial 2b stats
+mean(acc2bact$mean, na.rm = T) # mean act in hatchery acclimated fish
+sd(acc2bact$mean, na.rm = T) # sd act in hatchery acclimated fish
+mean(nacc2bact$mean, na.rm = T) # mean act in non-acclimated fish
+sd(nacc2bact$mean, na.rm = T) # sd act in non-acclimated fish
+
+# mean acclimated daytime and night time activity
+mean(acc2bact$mean[acc2bact$tod == 'ha_day_mean'])
+sd(acc2bact$mean[acc2bact$tod == 'ha_day_mean'])
+mean(acc2bact$mean[acc2bact$tod == 'ha_night_mean'])
+sd(acc2bact$mean[acc2bact$tod == 'ha_night_mean'])
+
+# mean non-acclimated daytime and night time activity
+mean(nacc2bact$mean[nacc2bact$tod == 'na_day_mean'])
+sd(nacc2bact$mean[nacc2bact$tod == 'na_day_mean'])
+mean(nacc2bact$mean[nacc2bact$tod == 'na_night_mean'])
+sd(nacc2bact$mean[nacc2bact$tod == 'na_night_mean'])
+
+# compare two groups anova
+acc2bact$group <- 'ha'
+nacc2bact$group <- 'na'
+twoaact <- rbind(acc2bact, nacc2bact)
+summary(aov(mact~group, twoaact))
+
+# compare night and day 2-way anova with tukey
+acc2bact$tod <- paste0('ha_', acc2bact$tod)
+nacc2bact$tod <- paste0('na_', nacc2bact$tod)
+twobact <- rbind(acc2bact, nacc2bact)
+twobact$daynum <- as.factor(twobact$daynum)
+
+model <- aov(mean~tod+daynum, twobact)
+TukeyHSD(model, 'tod')
+
+summary(aov(mean~tod*daynum, twobact))
 
 
 
@@ -2849,7 +3005,7 @@ wkudplot %<a-% {
   rect(wf.locations.lookup['8EW', 'xmin'], wf.locations.lookup['8ES', 'ymin'], wf.locations.lookup['8EE', 'xmax'], wf.locations.lookup['8EN', 'ymax'], lwd = 2) # cage limits
   #text(31, 39, labels = bquote(paste(KUD[50], ' = ', .(ka[1,1]), m^2)), adj = c(0,0))
   #text(31, 37.5, labels = bquote(paste(KUD[95], ' = ', .(ka[2,1]), m^2)), adj = c(0,0))
-  text(63, 38, labels = '(a)')
+  text(62, 40, labels = '(a)')
 }
 
 
@@ -2873,7 +3029,7 @@ fkudplot %<a-% {
   rect(wf.locations.lookup['8EW', 'xmin'], wf.locations.lookup['8ES', 'ymin'], wf.locations.lookup['8EE', 'xmax'], wf.locations.lookup['8EN', 'ymax'], lwd = 2) # cage limits
   #text(31, 39, labels = bquote(paste(KUD[50], ' = ', .(ka[1,1]), m^2)), adj = c(0,0))
   #text(31, 37.5, labels = bquote(paste(KUD[95], ' = ', .(ka[2,1]), m^2)), adj = c(0,0))
-  text(63, 38, labels = '(b)')
+  text(62, 40, labels = '(b)')
   
 }
 
@@ -2902,8 +3058,8 @@ ver95ac <- getverticeshr(ud, 95) # extract 95% vertex for plotting
 
 #draw acclimated fish plot and save to object using pryr package 
 ackudplot %<a-% {
-  plot(ver95ac, col = kudcols[[1]], axes = T, xlim = c(10, 45), ylim = c(10, 45), xlab = 'x (m)', ylab = 'y (m)') # plot KUD95
-  plot(ver50ac, col = kudcols[[2]], axes = F, xlim = c(10, 45), ylim = c(10, 45), add=T) # plot KUD50
+  plot(ver95ac, col = kudcols[[1]], axes = T, xlim = c(10, 40), ylim = c(10, 42), xlab = 'x (m)', ylab = 'y (m)') # plot KUD95
+  plot(ver50ac, col = kudcols[[2]], axes = F, xlim = c(10, 40), ylim = c(10, 42), add=T) # plot KUD50
   rect(ac.locations.lookup['7WHSE', 'xmin'], ac.locations.lookup['7WHSE', 'ymin'], ac.locations.lookup['7WHSE', 'xmax'], ac.locations.lookup['7WHSE', 'ymax'], lty = 3, lwd = 2)#, col = rgb(1, 0.6, 0, 0.4)) # 7WHSE
   rect(ac.locations.lookup['7WHNW', 'xmin'], ac.locations.lookup['7WHNW', 'ymin'], ac.locations.lookup['7WHNW', 'xmax'], ac.locations.lookup['7WHNW', 'ymax'], lty = 3, lwd = 2)#, col = rgb(1, 0.6, 0, 0.4)) # 7WHNW
   #rect(ac.locations.lookup['8FBNE', 'xmin'], ac.locations.lookup['8FBNE', 'ymin'], ac.locations.lookup['8FBNE', 'xmax'], ac.locations.lookup['8FBNE', 'ymax'], lty = 3, col = rgb(1, 1, 0.1, 0.4)) # 7FBNE
@@ -2911,7 +3067,7 @@ ackudplot %<a-% {
   rect(ac.locations.lookup['7EW', 'xmin'], ac.locations.lookup['7ES', 'ymin'], ac.locations.lookup['7EE', 'xmax'], ac.locations.lookup['7EN', 'ymax'], lwd = 2) # cage limits
   #text(31, 39, labels = bquote(paste(KUD[50], ' = ', .(ka[1,1]), m^2)), adj = c(0,0))
   #text(31, 37.5, labels = bquote(paste(KUD[95], ' = ', .(ka[2,1]), m^2)), adj = c(0,0))
-  text(43, 43, labels = '(c)')
+  text(41, 41, labels = '(c)')
   
 }
 
@@ -2944,7 +3100,7 @@ nakudplot %<a-% {
   rect(ac.locations.lookup['8EW', 'xmin'], ac.locations.lookup['8ES', 'ymin'], ac.locations.lookup['8EE', 'xmax'], ac.locations.lookup['8EN', 'ymax'], lwd = 2) # cage limits
   #text(31, 39, labels = bquote(paste(KUD[50], ' = ', .(ka[1,1]), m^2)), adj = c(0,0))
   #text(31, 37.5, labels = bquote(paste(KUD[95], ' = ', .(ka[2,1]), m^2)), adj = c(0,0))
-  text(69, 38, labels = '(d)')
+  text(69, 41, labels = '(d)')
   
 }
 
